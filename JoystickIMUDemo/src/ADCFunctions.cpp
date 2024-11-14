@@ -1,0 +1,38 @@
+//
+// Created by Robbie on 11/14/24.
+//
+
+#include "ADCFunctions.h"
+#include <Adafruit_Sensor.h>
+#include <Wire.h>
+#include <Adafruit_ADS1X15.h>
+
+// Initializes the ADC at the specified address
+void adcInit(Adafruit_ADS1115 &adc, uint8_t i2c_addr){
+
+    //Initialize ADC
+    while(!adc.begin(i2c_addr)){ // Initialize ads1115 at address 0x49
+        Serial.println("Failed to find ADS1115 chip");
+        while (1) { //TODO might want to change this
+            delay(10);
+        }
+    }
+    Serial.println("ADS1115 Found!");
+
+}
+
+//Prints data from all 4 channels of the ADC
+void printADC(Adafruit_ADS1115 &adc){
+    //Get ADC data
+    int16_t adc0, adc1, adc2, adc3;
+
+    adc0 = adc.readADC_SingleEnded(0);
+    adc1 = adc.readADC_SingleEnded(1);
+    adc2 = adc.readADC_SingleEnded(2);
+    adc3 = adc.readADC_SingleEnded(3);
+    Serial.print("AIN0: "); Serial.println(adc0);
+    Serial.print("AIN1: "); Serial.println(adc1);
+    Serial.print("AIN2: "); Serial.println(adc2);
+    Serial.print("AIN3: "); Serial.println(adc3);
+    Serial.println();
+}
