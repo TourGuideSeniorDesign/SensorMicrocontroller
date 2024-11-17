@@ -10,7 +10,14 @@
 #include <Adafruit_Sensor.h>
 #include <Wire.h>
 
-// Initializes the IMU with the specified ranges
+
+/**
+ * Initializes the IMU with the given parameters
+ * @param icm - An instance of the Adafruit_ICM20948 class for the IMU
+ * @param accelRang - The range of the accelerometer using the icm20948_accel_range_t enum
+ * @param gyroRang  - The range of the gyroscope using the icm20948_gyro_range_t enum
+ * @param magDataRate - The data rate of the magnetometer using the ak09916_data_rate_t enum
+ */
 void imuInit(Adafruit_ICM20948 &icm, icm20948_accel_range_t accelRang, icm20948_gyro_range_t gyroRang, ak09916_data_rate_t magDataRate){
 
     // Try to initialize IMU!
@@ -105,9 +112,13 @@ void imuInit(Adafruit_ICM20948 &icm, icm20948_accel_range_t accelRang, icm20948_
 
 }
 
-// Prints all the IMU data to the console
+
+/**
+ * Prints the IMU data to the serial monitor
+ * @param icm - An instance of the Adafruit_ICM20948 class for the IMU
+ */
 void printImuData(Adafruit_ICM20948 &icm){
-    //  /* Get a new normalized sensor event */
+
     sensors_event_t accel;
     sensors_event_t gyro;
     sensors_event_t mag;
