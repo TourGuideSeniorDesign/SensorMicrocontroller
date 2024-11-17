@@ -7,8 +7,13 @@
 #include <Wire.h>
 #include <Adafruit_ADS1X15.h>
 
-// Initializes the ADC at the specified address
-void adcInit(Adafruit_ADS1115 &adc, uint8_t i2c_addr){
+
+/**
+ * Initializes the ADC with the given parameters
+ * @param adc - An instance of the Adafruit_ADS1115 class for the ADC
+ * @param i2c_addr - The I2C address of the ADC in hex
+ */
+ void adcInit(Adafruit_ADS1115 &adc, uint8_t i2c_addr){
 
     //Initialize ADC
     while(!adc.begin(i2c_addr)){ // Initialize ads1115 at address 0x49
@@ -21,7 +26,11 @@ void adcInit(Adafruit_ADS1115 &adc, uint8_t i2c_addr){
 
 }
 
-//Prints data from all 4 channels of the ADC
+
+/***
+ * Prints the ADC data to the serial monitor
+ * @param adc - An instance of the Adafruit_ADS1115 class for the ADC
+ */
 void printADC(Adafruit_ADS1115 &adc){
     //Get ADC data
     int16_t adc0, adc1, adc2, adc3;
