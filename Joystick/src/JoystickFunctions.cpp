@@ -37,8 +37,8 @@ refSpeed joystickToSpeed(Adafruit_ADS1115 &adc){
     //TODO calculate the correct speeds based on the inputs
     refSpeed speeds{};
     float k = 0.011; //used for scaling
-    speeds.leftSpeed = clamp(k * (forwardJoystick - sidewaysJoystick), -100.0f, 100.0f);
-    speeds.rightSpeed = clamp(k * (forwardJoystick + sidewaysJoystick), -100.0f, 100.0f);
+    speeds.leftSpeed = static_cast<int8_t>(clamp(k * (forwardJoystick - sidewaysJoystick), -100.0f, 100.0f));
+    speeds.rightSpeed = static_cast<int8_t>(clamp(k * (forwardJoystick + sidewaysJoystick), -100.0f, 100.0f));
 
     //Deadzone
     if(speeds.leftSpeed < deadzoneParam && speeds.leftSpeed > -deadzoneParam && speeds.rightSpeed < deadzoneParam && speeds.rightSpeed > -deadzoneParam){
