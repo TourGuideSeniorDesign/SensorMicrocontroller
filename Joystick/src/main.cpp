@@ -25,8 +25,7 @@ void loop() {
     Serial.println(omegaRef.leftSpeed);
     Serial.print("Right Speed: ");
     Serial.println(omegaRef.rightSpeed);
-    Serial.print("Direction: ");
-    Serial.println(directionToString(omegaRef.dir));
+
 
     delay(300); // Delay for 1 second
 

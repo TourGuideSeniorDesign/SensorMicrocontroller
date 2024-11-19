@@ -41,7 +41,7 @@ void printADC(Adafruit_ADS1115 &adc){
     adc3 = adc.readADC_SingleEnded(3);
     Serial.print("AIN0: "); Serial.println(adc0);
     Serial.print("AIN1: "); Serial.println(adc1);
-    Serial.print("AIN2: "); Serial.println(adc2);
-    Serial.print("AIN3: "); Serial.println(adc3);
+    //Serial.print("AIN2: "); Serial.println(adc2);
+    //Serial.print("AIN3: "); Serial.println(adc3);
     Serial.println();
 }

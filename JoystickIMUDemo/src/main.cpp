@@ -32,7 +32,7 @@ void setup(void) {
 
 void loop() {
 
-    printImuData(icm);
+    //printImuData(icm);
     printADC(adc);
 
     delay(100);

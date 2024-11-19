@@ -8,21 +8,11 @@
 #include <Adafruit_ADS1X15.h>
 
 /**
- * Enum representing the direction of movement.
- */
-enum direction {
-    STOPPED,  ///< The wheelchair is stopped.
-    FORWARD,  ///< The wheelchair is forward.
-    BACKWARD  ///< The wheelchair is backward.
-};
-
-/**
  * Struct representing the reference speed and direction.
  */
 struct refSpeed {
     int leftSpeed;      ///< Speed of the left wheel.
     int rightSpeed;     ///< Speed of the right wheel.
-    direction dir;      ///< Direction of movement.
 };
 
 /**
@@ -32,11 +22,15 @@ struct refSpeed {
  */
 refSpeed joystickToSpeed(Adafruit_ADS1115 &adc);
 
+template <typename T>
 /**
- * Returns the string corresponding to the enum value
- * @param dir The enum to convert
- * @return A string for the enum
+ * Custom clamp function to keep a value between to values
+ * @tparam T The type of the value to clamp.
+ * @param value The value to clamp.
+ * @param min The minimum value.
+ * @param max The maximum value.
+ * @return Returns the clamped value.
  */
-const char* directionToString(direction dir);
+T clamp(T value, T min, T max);
 
 #endif //JOYSTICK_JOYSTICKFUNCTIONS_H
