@@ -3,7 +3,7 @@
 #include "ADCFunctions.h"
 #include "JoystickFunctions.h"
 
-#ifdef COMM
+#ifdef ROS
 #include <micro_ros_platformio.h>
 
 #include <rcl/rcl.h>
@@ -46,7 +46,7 @@ Adafruit_ADS1115 joystickAdc;	// Construct an ads1115
 
 void setup(void) {
     Serial.begin(115200);
-    #ifdef COMM
+    #ifdef ROS
     set_microros_serial_transports(Serial);
     delay(2000);
     #endif
@@ -56,7 +56,7 @@ void setup(void) {
 
     adcInit(joystickAdc, 0x48); //default address
 
-#ifdef COMM
+#ifdef ROS
     allocator = rcl_get_default_allocator();
 
     // Set the domain ID
@@ -97,7 +97,7 @@ void loop() {
 
     refSpeed omegaRef = joystickToSpeed(joystickAdc);
 
-    #ifdef COMM
+    #ifdef ROS
     msg.left_speed = omegaRef.leftSpeed;
     msg.right_speed = omegaRef.rightSpeed;
 
