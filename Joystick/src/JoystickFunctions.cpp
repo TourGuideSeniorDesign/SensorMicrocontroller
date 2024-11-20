@@ -34,7 +34,6 @@ refSpeed joystickToSpeed(Adafruit_ADS1115 &adc){
     Serial.println(sidewaysJoystick);*/
 
     //setting the speeds
-    //TODO calculate the correct speeds based on the inputs
     refSpeed speeds{};
     float k = 0.011; //used for scaling
     speeds.leftSpeed = static_cast<int8_t>(clamp(k * (forwardJoystick - sidewaysJoystick), -100.0f, 100.0f));
@@ -47,7 +46,7 @@ refSpeed joystickToSpeed(Adafruit_ADS1115 &adc){
         return speeds;
     }
 
-    //TODO check difference between the two and if it is very small then set them to the same
+    //Middle zone to have the same speed
     int diff = abs(speeds.leftSpeed - speeds.rightSpeed);
     if(diff > -diffParam && diff < diffParam){
         // Check if the speeds are positive or negative and set accordingly
@@ -67,8 +66,6 @@ refSpeed joystickToSpeed(Adafruit_ADS1115 &adc){
             }
         }
     }
-
-
 
     return speeds;
 }
