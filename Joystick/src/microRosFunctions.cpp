@@ -1,7 +1,7 @@
 //
 // Created by Robbie on 11/20/24.
 //
-
+#ifdef ROS
 #include "microRosFunctions.h"
 #include "JoystickFunctions.h"
 #include <Arduino.h>
@@ -83,3 +83,4 @@ void transmitMsg(refSpeed omegaRef){
 
     RCSOFTCHECK(rclc_executor_spin_some(&executor, RCL_MS_TO_NS(10)));
 }
+#endif

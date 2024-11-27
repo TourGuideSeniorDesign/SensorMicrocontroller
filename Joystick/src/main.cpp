@@ -34,6 +34,12 @@ void loop() {
 
     #ifdef ROS
         transmitMsg(omegaRef);
+
+    #elif DEBUG
+        Serial.print("Right Speed: ");
+        Serial.println(omegaRef.rightSpeed);
+        Serial.print("Left Speed: ");
+        Serial.println(omegaRef.leftSpeed);
     #endif
 
 }
