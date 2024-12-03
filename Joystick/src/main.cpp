@@ -34,16 +34,18 @@ void loop() {
     refSpeed omegaRef = joystickToSpeed(joystickAdc);
     int16_t usDistance = ultrasonicDistance(joystickAdc, 2);
 
+    Serial.print("Right Speed: ");
+    Serial.println(omegaRef.rightSpeed);
+    Serial.print("Left Speed: ");
+    Serial.println(omegaRef.leftSpeed);
+    Serial.print("Ultrasonic Distance: ");
+    Serial.println(usDistance);
+
     #ifdef ROS
         transmitMsg(omegaRef);
 
     #elif DEBUG
-        Serial.print("Right Speed: ");
-        Serial.println(omegaRef.rightSpeed);
-        Serial.print("Left Speed: ");
-        Serial.println(omegaRef.leftSpeed);
-        Serial.print("Ultrasonic Distance: ");
-        Serial.println(usDistance);
+
     #endif
 
 }

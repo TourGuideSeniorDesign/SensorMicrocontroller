@@ -25,13 +25,13 @@ refSpeed joystickToSpeed(Adafruit_ADS1115 &adc){
      */
 
     //Converting the speeds so they start around 0 and then go positive and negative
-    forwardJoystick = forwardJoystick - 8500;
-    sidewaysJoystick = sidewaysJoystick - 8400;
+    forwardJoystick = forwardJoystick - (8500+4400); //The second value is used to zero it out when the ADC gain is set to 0 instead of the default (2/3)
+    sidewaysJoystick = sidewaysJoystick - (8400+4400);
 
-    /*Serial.print("Forward joystick: ");
-    Serial.println(forwardJoystick);
-    Serial.print("Sideways joystick: ");
-    Serial.println(sidewaysJoystick);*/
+//    Serial.print("Forward joystick: ");
+//    Serial.println(forwardJoystick);
+//    Serial.print("Sideways joystick: ");
+//    Serial.println(sidewaysJoystick);
 
     //setting the speeds
     refSpeed speeds{};

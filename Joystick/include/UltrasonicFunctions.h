@@ -12,6 +12,6 @@
  * @param pinNumber The pin number of the ADC that the sensor is attached to.
  * @return Returns the distance on the ultrasonic sensor, measured in cm. Returns -1 if the pin is misconfigured.
  */
-int16_t ultrasonicDistance(Adafruit_ADS1115 &adc, uint8_t pinNumber);
+uint16_t ultrasonicDistance(Adafruit_ADS1115 &adc, uint8_t pinNumber);
 
 #endif //JOYSTICK_ULTRASONICFUNCTIONS_H
