@@ -15,13 +15,17 @@
 #include <wheelchair_sensor_msgs/msg/ref_speed.h>
 
 //Publisher
-rcl_publisher_t publisher;
-wheelchair_sensor_msgs__msg__Sensors sensorMsg;
-rclc_executor_t pub_executor;
+// rcl_publisher_t publisher;
+// wheelchair_sensor_msgs__msg__Sensors sensorMsg;
+// rclc_executor_t pub_executor;
 
 //Subscriber
 rcl_subscription_t subscriber;
+#ifdef DEBUG
+wheelchair_sensor_msgs__msg__Sensors refSpeedMsg;
+#else
 wheelchair_sensor_msgs__msg__RefSpeed refSpeedMsg;
+#endif
 rclc_executor_t executor_sub;
 
 rclc_support_t support;
@@ -39,19 +43,34 @@ void error_loop() {
     }
 }
 
-void timer_callback(rcl_timer_t * inputTimer, int64_t last_call_time)
-{
-    RCLC_UNUSED(last_call_time);
-    if (inputTimer != NULL) {
-        RCSOFTCHECK(rcl_publish(&publisher, &sensorMsg, NULL));
-    }
-}
+// void timer_callback(rcl_timer_t * inputTimer, int64_t last_call_time)
+// {
+//     RCLC_UNUSED(last_call_time);
+//     if (inputTimer != NULL) {
+//         RCSOFTCHECK(rcl_publish(&publisher, &sensorMsg, NULL));
+//     }
+// }
 
 void subscription_callback(const void *msgin)
 {
+#ifdef DEBUG
+    const wheelchair_sensor_msgs__msg__Sensors *msg = (const wheelchair_sensor_msgs__msg__Sensors *)msgin;
+    //Try using Serial1 to use a Uart adapter to print this out
+    Serial1.print("Left Speed: ");
+    Serial1.println(msg->left_speed);
+    Serial1.print("Right Speed: ");
+    Serial1.println(msg->right_speed);
+
+
+    if (msg->left_speed == 100 || msg->right_speed == 100) {
+        digitalWrite(LED_BUILTIN, HIGH);
+    } else {
+        digitalWrite(LED_BUILTIN, LOW);
+    }
+#else
     const wheelchair_sensor_msgs__msg__RefSpeed *msg = (const wheelchair_sensor_msgs__msg__RefSpeed *)msgin;
     refSpeedMsg = *msg;
-    //Try using Serial1 to use a Uart adapter to print this out
+#endif
 }
 
 void microRosSetup(unsigned int timer_timeout, const char* nodeName, const char* subTopicName){
@@ -79,33 +98,37 @@ void microRosSetup(unsigned int timer_timeout, const char* nodeName, const char*
     RCCHECK(rclc_subscription_init_default(
             &subscriber,
             &node,
-            ROSIDL_GET_MSG_TYPE_SUPPORT(wheelchair_sensor_msgs, msg, RefSpeed),
+            ROSIDL_GET_MSG_TYPE_SUPPORT(wheelchair_sensor_msgs, msg, Sensors),
             subTopicName));
 
 
     // create timer,
     //unsigned int timer_timeout = 1;
-    RCCHECK(rclc_timer_init_default(
-            &timer,
-            &support,
-            RCL_MS_TO_NS(timer_timeout),
-            timer_callback));
+    // RCCHECK(rclc_timer_init_default(
+    //         &timer,
+    //         &support,
+    //         RCL_MS_TO_NS(timer_timeout),
+    //         timer_callback));
 
     // create executor
-    RCCHECK(rclc_executor_init(&pub_executor, &support.context, 1, &allocator));
-    RCCHECK(rclc_executor_add_timer(&pub_executor, &timer));
+    // RCCHECK(rclc_executor_init(&pub_executor, &support.context, 1, &allocator));
+    // RCCHECK(rclc_executor_add_timer(&pub_executor, &timer));
 
     // create sub executor
     RCCHECK(rclc_executor_init(&executor_sub, &support.context, 1, &allocator));
     RCCHECK(rclc_executor_add_subscription(&executor_sub, &subscriber, &refSpeedMsg, &subscription_callback, ON_NEW_DATA));
 
-    sensorMsg.left_speed = 0;
-    sensorMsg.right_speed = 0;
+    // sensorMsg.left_speed = 0;
+    // sensorMsg.right_speed = 0;
 }
 
-void transmitMsg(refSpeed omegaRef){
-    sensorMsg.left_speed = omegaRef.leftSpeed;
-    sensorMsg.right_speed = omegaRef.rightSpeed;
+// void transmitMsg(refSpeed omegaRef){
+//     sensorMsg.left_speed = omegaRef.leftSpeed;
+//     sensorMsg.right_speed = omegaRef.rightSpeed;
+//
+//     RCSOFTCHECK(rclc_executor_spin_some(&pub_executor, RCL_MS_TO_NS(10)));
+// }
 
-    RCSOFTCHECK(rclc_executor_spin_some(&pub_executor, RCL_MS_TO_NS(10)));
+void checkSubs() {
+    RCCHECK(rclc_executor_spin_some(&executor_sub, RCL_MS_TO_NS(100)));
 }

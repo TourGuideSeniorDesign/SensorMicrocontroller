@@ -19,6 +19,8 @@ void microRosSetup(unsigned int timerValue, const char* nodeName, const char* su
  * Transmits the message over ROS
  * @param omegaRef The referenceSpeed struct to transmit
  */
-void transmitMsg(refSpeed omegaRef);
+// void transmitMsg(refSpeed omegaRef);
+
+void checkSubs();
 
 #endif //JOYSTICK_MICROROSFUNCTIONS_H
