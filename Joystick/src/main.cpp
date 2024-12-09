@@ -2,6 +2,7 @@
 #include <Adafruit_ADS1X15.h>
 #include "ADCFunctions.h"
 #include "JoystickFunctions.h"
+#include "UltrasonicFunctions.h"
 
 #ifdef ROS
 #include <microRosFunctions.h>
@@ -31,15 +32,20 @@ void setup(void) {
 void loop() {
 
     refSpeed omegaRef = joystickToSpeed(joystickAdc);
+    int16_t usDistance = ultrasonicDistance(joystickAdc, 2);
+
+    Serial.print("Right Speed: ");
+    Serial.println(omegaRef.rightSpeed);
+    Serial.print("Left Speed: ");
+    Serial.println(omegaRef.leftSpeed);
+    Serial.print("Ultrasonic Distance: ");
+    Serial.println(usDistance);
 
     #ifdef ROS
         transmitMsg(omegaRef);
 
     #elif DEBUG
-        Serial.print("Right Speed: ");
-        Serial.println(omegaRef.rightSpeed);
-        Serial.print("Left Speed: ");
-        Serial.println(omegaRef.leftSpeed);
+
     #endif
 
 }
