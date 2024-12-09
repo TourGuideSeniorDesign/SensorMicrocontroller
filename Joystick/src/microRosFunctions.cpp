@@ -55,7 +55,7 @@ void microRosSetup(unsigned int timer_timeout, const char* nodeName, const char*
     RCCHECK(rclc_node_init_default(&node, nodeName, "", &support));
 
     // create publisher
-    RCCHECK(rclc_publisher_init_default(
+    RCCHECK(rclc_publisher_init_best_effort(
             &publisher,
             &node,
             ROSIDL_GET_MSG_TYPE_SUPPORT(wheelchair_sensor_msgs, msg, Sensors),
