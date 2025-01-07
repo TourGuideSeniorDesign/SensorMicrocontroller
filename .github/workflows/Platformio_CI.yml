@@ -18,7 +18,9 @@ jobs:
         with:
           python-version: '3.11'
       - name: Install PlatformIO Core
-        run: python -m pip install --upgrade platformio
+        run: |
+          curl -fsSL -o get-platformio.py https://raw.githubusercontent.com/platformio/platformio-core-installer/master/get-platformio.py
+          python3 get-platformio.py
       - name: Build PlatformIO Project
         run: pio run
         working-directory: Joystick
