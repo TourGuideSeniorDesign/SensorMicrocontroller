@@ -20,6 +20,6 @@ jobs:
       - name: Install PlatformIO Core
         run: pip install --upgrade platformio
       - name: Enter Joystick Folder
-        run: cd ./Joystick
+        run: cd Joystick
       - name: Build PlatformIO Project
         run: pio run
