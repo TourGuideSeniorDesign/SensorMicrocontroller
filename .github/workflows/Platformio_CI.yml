@@ -21,6 +21,10 @@ jobs:
         run: |
           curl -fsSL -o get-platformio.py https://raw.githubusercontent.com/platformio/platformio-core-installer/master/get-platformio.py
           python3 get-platformio.py
+          export PATH=$PATH:$HOME/.local/bin
+          ln -s ~/.platformio/penv/bin/platformio ~/.local/bin/platformio
+          ln -s ~/.platformio/penv/bin/pio ~/.local/bin/pio
+          ln -s ~/.platformio/penv/bin/piodebuggdb ~/.local/bin/piodebuggdb
       - name: Build PlatformIO Project
         run: pio run
         working-directory: Joystick
