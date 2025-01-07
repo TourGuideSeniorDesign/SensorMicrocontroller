@@ -1,3 +1,5 @@
+[![PlatformIO CI](https://github.com/WheelchairSeniorDesign/SensorMicrocontroller/actions/workflows/Platformio_CI.yml/badge.svg)](https://github.com/WheelchairSeniorDesign/SensorMicrocontroller/actions/workflows/Platformio_CI.yml)
+
 # About
 this repo is for all the code related to the microcontroller system for our wheelchair.
 
