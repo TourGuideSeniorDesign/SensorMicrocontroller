@@ -3,6 +3,7 @@
 #include "ADCFunctions.h"
 #include "JoystickFunctions.h"
 #include "UltrasonicFunctions.h"
+#include "FingerprintFunctions.h"
 
 #ifdef ROS
 #include <microRosFunctions.h>
@@ -26,6 +27,7 @@ void setup(void) {
     }
 
     adcInit(joystickAdc, 0x48); //default address
+    setupFingerprint();
 
 }
 
