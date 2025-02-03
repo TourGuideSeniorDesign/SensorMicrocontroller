@@ -10,7 +10,7 @@
 /**
  * Struct representing the reference speed and direction.
  */
-struct refSpeed {
+struct RefSpeed {
     int8_t leftSpeed;      ///< Speed of the left wheel.
     int8_t rightSpeed;     ///< Speed of the right wheel.
 };
@@ -20,7 +20,7 @@ struct refSpeed {
  * @param adc An instance of the adc the joystick is connected to
  * @return A refSpeed for the wheelchair containing the wheel speeds and the direction
  */
-refSpeed joystickToSpeed(Adafruit_ADS1115 &adc);
+RefSpeed joystickToSpeed(Adafruit_ADS1115 &adc);
 
 template <typename T>
 /**

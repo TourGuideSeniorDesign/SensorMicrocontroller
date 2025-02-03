@@ -4,6 +4,7 @@
 #include "JoystickFunctions.h"
 #include "UltrasonicFunctions.h"
 #include "FingerprintFunctions.h"
+#include "PIRFunctions.h"
 
 #ifdef ROS
 #include <microRosFunctions.h>
@@ -11,7 +12,6 @@
 #endif
 
 Adafruit_ADS1115 joystickAdc;	// Construct an ads1115
-
 
 void setup(void) {
     Serial.begin(115200);
@@ -33,8 +33,10 @@ void setup(void) {
 
 void loop() {
 
-    refSpeed omegaRef = joystickToSpeed(joystickAdc);
+    RefSpeed omegaRef = joystickToSpeed(joystickAdc);
     int16_t usDistance = ultrasonicDistance(joystickAdc, 2);
+    PIRSensors pirSensors = readAllPIR();
+    uint8_t fingerID = getFingerprintID();
 
     Serial.print("Right Speed: ");
     Serial.println(omegaRef.rightSpeed);
@@ -42,9 +44,21 @@ void loop() {
     Serial.println(omegaRef.leftSpeed);
     Serial.print("Ultrasonic Distance: ");
     Serial.println(usDistance);
+    Serial.print("PIR 0: ");
+    Serial.println(pirSensors.pir0);
+    Serial.print("PIR 1: ");
+    Serial.println(pirSensors.pir1);
+    Serial.print("PIR 2: ");
+    Serial.println(pirSensors.pir2);
+    Serial.print("PIR 3: ");
+    Serial.println(pirSensors.pir3);
+    Serial.print("Fingerprint ID: ");
+    Serial.println(fingerID);
+    delay(1000);
 
     #ifdef ROS
-        transmitMsg(omegaRef);
+
+    transmitMsg(omegaRef);
 
     #elif DEBUG
 
