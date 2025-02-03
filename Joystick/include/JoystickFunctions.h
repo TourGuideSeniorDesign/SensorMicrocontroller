@@ -18,7 +18,7 @@ struct RefSpeed {
 /**
  * Reads a value from the joystick connected to the ADC and returns the reference speeds
  * @param adc An instance of the adc the joystick is connected to
- * @return A refSpeed for the wheelchair containing the wheel speeds and the direction
+ * @return A RefSpeed for the wheelchair containing the wheel speeds and the direction
  */
 RefSpeed joystickToSpeed(Adafruit_ADS1115 &adc);
 
