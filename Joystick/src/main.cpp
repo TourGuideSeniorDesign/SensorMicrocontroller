@@ -36,6 +36,7 @@ void loop() {
     RefSpeed omegaRef = joystickToSpeed(joystickAdc);
     int16_t usDistance = ultrasonicDistance(joystickAdc, 2);
     PIRSensors pirSensors = readAllPIR();
+    bool pir0 = readPIRSingle(PIR_0);
     uint8_t fingerID = getFingerprintID();
 
     Serial.print("Right Speed: ");
@@ -44,8 +45,10 @@ void loop() {
     Serial.println(omegaRef.leftSpeed);
     Serial.print("Ultrasonic Distance: ");
     Serial.println(usDistance);
-    Serial.print("PIR 0: ");
+    Serial.print("PIR 0 struct: ");
     Serial.println(pirSensors.pir0);
+    Serial.print("PIR 0 single: ");
+    Serial.println(pir0);
     Serial.print("PIR 1: ");
     Serial.println(pirSensors.pir1);
     Serial.print("PIR 2: ");
@@ -54,7 +57,7 @@ void loop() {
     Serial.println(pirSensors.pir3);
     Serial.print("Fingerprint ID: ");
     Serial.println(fingerID);
-    delay(1000);
+    delay(50);
 
     #ifdef ROS
 
