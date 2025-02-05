@@ -169,9 +169,9 @@ IMUData getIMUData(Adafruit_ICM20948 &icm){
     data.accel_x = accel.acceleration.x;
     data.accel_y = accel.acceleration.y;
     data.accel_z = accel.acceleration.z;
-    data.gyro_x = gyro.gyro.x * 180.0 / M_PI; // Convert to deg/s
-    data.gyro_y = gyro.gyro.y * 180.0 / M_PI; // Convert to deg/s
-    data.gyro_z = gyro.gyro.z * 180.0 / M_PI; // Convert to deg/s
+    data.gyro_x = gyro.gyro.x;
+    data.gyro_y = gyro.gyro.y;
+    data.gyro_z = gyro.gyro.z;
     data.mag_x = mag.magnetic.x;
     data.mag_y = mag.magnetic.y;
     data.mag_z = mag.magnetic.z;
