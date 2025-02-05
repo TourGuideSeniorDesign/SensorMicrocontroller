@@ -109,7 +109,6 @@ void imuInit(Adafruit_ICM20948 &icm, icm20948_accel_range_t accelRang, icm20948_
             break;
     }
     Serial.println();
-
 }
 
 
@@ -159,3 +158,24 @@ void printImuData(Adafruit_ICM20948 &icm){
 
     delay(100);
 }
+
+IMUData getIMUData(Adafruit_ICM20948 &icm){
+    sensors_event_t accel;
+    sensors_event_t gyro;
+    sensors_event_t mag;
+    sensors_event_t temp;
+    icm.getEvent(&accel, &gyro, &temp, &mag);
+    IMUData data{};
+    data.accel_x = accel.acceleration.x;
+    data.accel_y = accel.acceleration.y;
+    data.accel_z = accel.acceleration.z;
+    data.gyro_x = gyro.gyro.x * 180.0 / M_PI; // Convert to deg/s
+    data.gyro_y = gyro.gyro.y * 180.0 / M_PI; // Convert to deg/s
+    data.gyro_z = gyro.gyro.z * 180.0 / M_PI; // Convert to deg/s
+    data.mag_x = mag.magnetic.x;
+    data.mag_y = mag.magnetic.y;
+    data.mag_z = mag.magnetic.z;
+
+    return data;
+}
+
