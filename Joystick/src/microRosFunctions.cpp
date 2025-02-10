@@ -77,7 +77,7 @@ void microRosSetup(unsigned int timer_timeout, const char* nodeName, const char*
     msg.right_speed = 0;
 }
 
-void transmitMsg(refSpeed omegaRef){
+void transmitMsg(RefSpeed omegaRef){
     msg.left_speed = omegaRef.leftSpeed;
     msg.right_speed = omegaRef.rightSpeed;
 
