@@ -5,6 +5,7 @@
 #include "JoystickFunctions.h"
 #include "UltrasonicFunctions.h"
 #include "IMUFunctions.h"
+#include "PWMFunctions.h"
 
 #ifdef ROS
 #include <microRosFunctions.h>
@@ -13,6 +14,9 @@
 
 Adafruit_ADS1115 joystickAdc;	// Construct an ads1115
 Adafruit_ICM20948 icm;
+
+uint8_t dutyCycle0 = 25;
+
 
 void setup(void) {
     Serial.begin(115200);
@@ -29,12 +33,14 @@ void setup(void) {
 
     adcInit(joystickAdc, 0x48); //default address
 
+    setPWM(PWM_PIN0, 25000, dutyCycle0);
+
 }
 
 void loop() {
     IMUData imuData = getIMUData(icm);
     refSpeed omegaRef = joystickToSpeed(joystickAdc);
-    int16_t usDistance = ultrasonicDistance(joystickAdc, 2);
+    uint16_t usDistance = ultrasonicDistance(joystickAdc, 2);
 
     Serial.print("Right Speed: ");
     Serial.println(omegaRef.rightSpeed);
