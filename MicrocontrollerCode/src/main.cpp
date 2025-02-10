@@ -43,16 +43,14 @@ void setup(void) {
     }
 
     adcInit(joystickAdc, 0x48); //default address
+    imuInit(icm, ICM20948_ACCEL_RANGE_2_G, ICM20948_GYRO_RANGE_250_DPS, AK09916_MAG_DATARATE_10_HZ);
     setupFingerprint();
-
     setFanIndividual(FAN_0, dutyCycle0);
-
 }
 
 void loop() {
-
     RefSpeed omegaRef = joystickToSpeed(joystickAdc);
-    uint16_t usDistance = ultrasonicDistance(joystickAdc, 2);
+    //uint16_t usDistance = ultrasonicDistance(joystickAdc, 2);
     USData usDistances = allUltrasonicDistance(joystickAdc, ultrasonicAdc);
     PIRSensors pirSensors = readAllPIR();
     uint8_t fingerID = getFingerprintID();
@@ -78,8 +76,8 @@ void loop() {
     Serial.println(omegaRef.rightSpeed);
     Serial.print("Left Speed: ");
     Serial.println(omegaRef.leftSpeed);
-    Serial.print("Ultrasonic Distance: ");
-    Serial.println(usDistance);
+    //Serial.print("Ultrasonic Distance: ");
+    //Serial.println(usDistance);
     Serial.print("PIR 0 struct: ");
     Serial.println(pirSensors.pir0);
     Serial.print("PIR 1: ");

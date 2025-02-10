@@ -23,10 +23,10 @@ uint16_t ultrasonicDistance(Adafruit_ADS1115 &adc, uint8_t pinNumber){
     uint16_t distance = adc.readADC_SingleEnded(pinNumber) * MAX_RANG / ADC_SOLUTION;
 
 #ifdef DEBUG
-    Serial.print("Raw Reading: ");
-    Serial.println(adc.readADC_SingleEnded(pinNumber));
-    Serial.print("Ultrasonic Distance: ");
-    Serial.println(distance);
+    // Serial.print("Raw Reading: ");
+    // Serial.println(adc.readADC_SingleEnded(pinNumber));
+    // Serial.print("Ultrasonic Distance: ");
+    // Serial.println(distance);
 #endif
     return distance;
 }
@@ -36,10 +36,16 @@ USData allUltrasonicDistance(Adafruit_ADS1115 &adc0, Adafruit_ADS1115 &adc1){
     USData usData{};
 
     usData.us_front_0 = adc0.readADC_SingleEnded(2) * MAX_RANG / ADC_SOLUTION;
-    usData.us_front_1 = adc1.readADC_SingleEnded(0) * MAX_RANG / ADC_SOLUTION;
-    usData.us_back = adc1.readADC_SingleEnded(1) * MAX_RANG / ADC_SOLUTION;
-    usData.us_left = adc1.readADC_SingleEnded(2) * MAX_RANG / ADC_SOLUTION;
-    usData.us_right = adc1.readADC_SingleEnded(3) * MAX_RANG / ADC_SOLUTION;
+    // usData.us_front_1 = adc1.readADC_SingleEnded(0) * MAX_RANG / ADC_SOLUTION;
+    // usData.us_back = adc1.readADC_SingleEnded(1) * MAX_RANG / ADC_SOLUTION;
+    // usData.us_left = adc1.readADC_SingleEnded(2) * MAX_RANG / ADC_SOLUTION;
+    // usData.us_right = adc1.readADC_SingleEnded(3) * MAX_RANG / ADC_SOLUTION;
+
+    //Used
+    usData.us_front_1 = 0;
+    usData.us_back = 0;
+    usData.us_left = 0;
+    usData.us_right = 0;
 
     return usData;
 }
