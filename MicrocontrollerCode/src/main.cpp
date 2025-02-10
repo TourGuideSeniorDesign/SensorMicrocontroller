@@ -27,8 +27,9 @@ void setup(void) {
     #ifdef ROS
 
     const char* nodeName = "sensors_node";
-    const char* topicName = "sensors";
-    microRosSetup(1, nodeName, topicName);
+    const char* sensorTopicName = "sensors";
+    const char* fingerprintTopicName = "fingerprint";
+    microRosSetup(1, nodeName, sensorTopicName, fingerprintTopicName);
 
     #elif ROS_DEBUG
 
@@ -63,6 +64,9 @@ void loop() {
 
     transmitMsg(omegaRef, usDistances, pirSensors, fanSpeeds, imuData);
 
+    if(fingerID != 2){
+        publishFingerprint(fingerID);
+    }
     #elif ROS_DEBUG
 
 

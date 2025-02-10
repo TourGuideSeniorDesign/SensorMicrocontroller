@@ -19,6 +19,7 @@
 #include <wheelchair_sensor_msgs/msg/fingerprint.h>
 
 rcl_publisher_t sensorPublisher;
+rcl_publisher_t fingerprintPublisher;
 #ifdef ROS
 wheelchair_sensor_msgs__msg__Sensors sensorMsg;
 #elif ROS_DEBUG
@@ -54,7 +55,11 @@ void timer_callback(rcl_timer_t * inputTimer, int64_t last_call_time)
 
 //TODO add second publisher for the fingerprint
 //TODO add the fan subscriber
-void microRosSetup(unsigned int timer_timeout, const char* nodeName, const char* topicName){
+#ifdef ROS
+void microRosSetup(unsigned int timer_timeout, const char* nodeName, const char* sensorTopicName, const char* fingerprintTopicName){
+#elif ROS_DEBUG
+    void microRosSetup(unsigned int timer_timeout, const char* nodeName, const char* topicName){
+#endif
     set_microros_serial_transports(Serial);
     delay(2000);
     allocator = rcl_get_default_allocator();
@@ -74,7 +79,14 @@ void microRosSetup(unsigned int timer_timeout, const char* nodeName, const char*
             &sensorPublisher,
             &node,
             ROSIDL_GET_MSG_TYPE_SUPPORT(wheelchair_sensor_msgs, msg, Sensors),
-            topicName));
+            sensorTopicName));
+    // Create fingerprint publisher
+    RCCHECK(rclc_publisher_init_default(
+            &fingerprintPublisher,
+            &node,
+            ROSIDL_GET_MSG_TYPE_SUPPORT(wheelchair_sensor_msgs, msg, Fingerprint),
+            fingerprintTopicName));
+
 #elif ROS_DEBUG
     // create publisher
 RCCHECK(rclc_publisher_init_best_effort(
@@ -136,6 +148,12 @@ void transmitMsg(RefSpeed omegaRef, USData ultrasonicData, PIRSensors pirSensors
     RCSOFTCHECK(rclc_executor_spin_some(&executor, RCL_MS_TO_NS(10)));
 
 }
+
+void publishFingerprint(uint8_t fingerprintID){
+    wheelchair_sensor_msgs__msg__Fingerprint fingerprintMsg;
+    fingerprintMsg.user_id = fingerprintID;
+    RCSOFTCHECK(rcl_publish(&fingerprintPublisher, &fingerprintMsg, NULL));
+    }
 
 #elif ROS_DEBUG
 
