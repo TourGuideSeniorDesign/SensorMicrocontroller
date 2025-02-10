@@ -4,18 +4,12 @@
 #include <Adafruit_Sensor.h>
 #include <Wire.h>
 #include <Adafruit_ADS1X15.h>
-#include "IMUFunctions.h"
+#include "../../Joystick/include/IMUFunctions.h"
 #include "ADCFunctions.h"
 
 Adafruit_ADS1115 adc;	// Construct an ads1115
 Adafruit_ICM20948 icm;
 uint16_t measurement_delay_us = 65535; // Delay between measurements for testing
-// For SPI mode, we need a CS pin
-#define ICM_CS 10
-// For software-SPI mode we need SCK/MOSI/MISO pins
-#define ICM_SCK 13
-#define ICM_MISO 12
-#define ICM_MOSI 11
 
 void setup(void) {
     Serial.begin(115200);
@@ -32,9 +26,30 @@ void setup(void) {
 
 void loop() {
 
+    IMUData imuData{};
     //printImuData(icm);
-    printADC(adc);
+    //printADC(adc);
+    imuData = getIMUData(icm);
+    Serial.print("Accel X: ");
+    Serial.print(imuData.accel_x);
+    Serial.print(" \tY: ");
+    Serial.print(imuData.accel_y);
+    Serial.print(" \tZ: ");
+    Serial.println(imuData.accel_z);
 
+    Serial.print("Gyro X: ");
+    Serial.print(imuData.gyro_x);
+    Serial.print(" \tY: ");
+    Serial.print(imuData.gyro_y);
+    Serial.print(" \tZ: ");
+    Serial.println(imuData.gyro_z);
+
+    Serial.print("Mag X: ");
+    Serial.print(imuData.mag_x);
+    Serial.print(" \tY: ");
+    Serial.print(imuData.mag_y);
+    Serial.print(" \tZ: ");
+    Serial.println(imuData.mag_z);
     delay(100);
 
 

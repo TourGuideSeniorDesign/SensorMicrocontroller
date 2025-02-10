@@ -1,10 +1,14 @@
 #include <Wire.h>
 #include <Adafruit_ADS1X15.h>
+#include <Adafruit_ICM20948.h>
 #include "ADCFunctions.h"
 #include "JoystickFunctions.h"
 #include "UltrasonicFunctions.h"
 #include "FingerprintFunctions.h"
 #include "PIRFunctions.h"
+#include "IMUFunctions.h"
+#include "PWMFunctions.h"
+
 
 #ifdef ROS
 #include <microRosFunctions.h>
@@ -12,6 +16,9 @@
 #endif
 
 Adafruit_ADS1115 joystickAdc;	// Construct an ads1115
+Adafruit_ICM20948 icm;
+
+uint8_t dutyCycle0 = 25;
 
 void setup(void) {
     Serial.begin(115200);
@@ -29,15 +36,19 @@ void setup(void) {
     adcInit(joystickAdc, 0x48); //default address
     setupFingerprint();
 
+    setPWM(PWM_PIN0, 25000, dutyCycle0);
+
 }
 
 void loop() {
 
     RefSpeed omegaRef = joystickToSpeed(joystickAdc);
-    int16_t usDistance = ultrasonicDistance(joystickAdc, 2);
+    uint16_t usDistance = ultrasonicDistance(joystickAdc, 2);
     PIRSensors pirSensors = readAllPIR();
     bool pir0 = readPIRSingle(PIR_0);
     uint8_t fingerID = getFingerprintID();
+    IMUData imuData = getIMUData(icm);
+
 
     Serial.print("Right Speed: ");
     Serial.println(omegaRef.rightSpeed);
@@ -58,6 +69,27 @@ void loop() {
     Serial.print("Fingerprint ID: ");
     Serial.println(fingerID);
     delay(50);
+
+    Serial.print("Accel X: ");
+    Serial.print(imuData.accel_x);
+    Serial.print(" \tY: ");
+    Serial.print(imuData.accel_y);
+    Serial.print(" \tZ: ");
+    Serial.println(imuData.accel_z);
+
+    Serial.print("Gyro X: ");
+    Serial.print(imuData.gyro_x);
+    Serial.print(" \tY: ");
+    Serial.print(imuData.gyro_y);
+    Serial.print(" \tZ: ");
+    Serial.println(imuData.gyro_z);
+
+    Serial.print("Mag X: ");
+    Serial.print(imuData.mag_x);
+    Serial.print(" \tY: ");
+    Serial.print(imuData.mag_y);
+    Serial.print(" \tZ: ");
+    Serial.println(imuData.mag_z);
 
     #ifdef ROS
 
