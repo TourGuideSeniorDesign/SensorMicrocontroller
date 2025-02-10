@@ -1,7 +1,7 @@
 //
 // Created by Robbie on 11/20/24.
 //
-#ifdef ROS
+#if defined(ROS) || defined(ROS_DEBUG)
 #include "microRosFunctions.h"
 #include "JoystickFunctions.h"
 #include <Arduino.h>
@@ -13,9 +13,14 @@
 #include <rclc/executor.h>
 
 #include <wheelchair_sensor_msgs/msg/sensors.h>
+#include <wheelchair_sensor_msgs/msg/ref_speed.h>
 
 rcl_publisher_t publisher;
+#ifdef ROS
 wheelchair_sensor_msgs__msg__Sensors msg;
+#elif ROS_DEBUG
+wheelchair_sensor_msgs__msg__RefSpeed msg;
+#endif
 rclc_executor_t executor;
 rclc_support_t support;
 rcl_allocator_t allocator;
@@ -54,12 +59,21 @@ void microRosSetup(unsigned int timer_timeout, const char* nodeName, const char*
     // create node
     RCCHECK(rclc_node_init_default(&node, nodeName, "", &support));
 
+#ifdef ROS
     // create publisher
     RCCHECK(rclc_publisher_init_best_effort(
             &publisher,
             &node,
             ROSIDL_GET_MSG_TYPE_SUPPORT(wheelchair_sensor_msgs, msg, Sensors),
             topicName));
+#elif ROS_DEBUG
+    // create publisher
+    RCCHECK(rclc_publisher_init_best_effort(
+            &publisher,
+            &node,
+            ROSIDL_GET_MSG_TYPE_SUPPORT(wheelchair_sensor_msgs, msg, RefSpeed),
+            topicName));
+#endif
 
     // create timer,
     //unsigned int timer_timeout = 1;
@@ -77,10 +91,38 @@ void microRosSetup(unsigned int timer_timeout, const char* nodeName, const char*
     msg.right_speed = 0;
 }
 
+
+#ifdef ROS
+void transmitMsg(RefSpeed omegaRef, USData ultrasonicData, PIRSensors pirSensors, FanSpeeds fanSpeeds){
+    msg.left_speed = omegaRef.leftSpeed;
+    msg.right_speed = omegaRef.rightSpeed;
+    msg.ultrasonic_front_0 = ultrasonicData.us_front_0;
+    msg.ultrasonic_front_1 = ultrasonicData.us_front_1;
+    msg.ultrasonic_back = ultrasonicData.us_back;
+    msg.ultrasonic_left = ultrasonicData.us_left;
+    msg.ultrasonic_right = ultrasonicData.us_right;
+    msg.pir_front = pirSensors.pir0;
+    msg.pir_back = pirSensors.pir1;
+    msg.pir_left = pirSensors.pir2;
+    msg.pir_right = pirSensors.pir3;
+    msg.fan_speed_0 = fanSpeeds.fan_speed_0;
+    msg.fan_speed_1 = fanSpeeds.fan_speed_1;
+    msg.fan_speed_2 = fanSpeeds.fan_speed_2;
+    msg.fan_speed_3 = fanSpeeds.fan_speed_3;
+
+    RCSOFTCHECK(rclc_executor_spin_some(&executor, RCL_MS_TO_NS(10)));
+
+}
+
+#elif ROS_DEBUG
+
 void transmitMsg(RefSpeed omegaRef){
     msg.left_speed = omegaRef.leftSpeed;
     msg.right_speed = omegaRef.rightSpeed;
 
     RCSOFTCHECK(rclc_executor_spin_some(&executor, RCL_MS_TO_NS(10)));
 }
+
+#endif
+
 #endif

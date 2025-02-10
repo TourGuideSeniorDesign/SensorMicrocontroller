@@ -6,6 +6,9 @@
 #define JOYSTICK_MICROROSFUNCTIONS_H
 
 #include "JoystickFunctions.h"
+#include "UltrasonicFunctions.h"
+#include "PIRFunctions.h"
+#include "FanFunctions.h"
 
 /**
  * Sets up microROS communication
@@ -15,10 +18,18 @@
  */
 void microRosSetup(unsigned int timerValue, const char* nodeName, const char* topicName);
 
+
+#ifdef ROS
+void transmitMsg(RefSpeed omegaRef, USData ultrasonicData, PIRSensors pirSensors, FanSpeeds fanSpeeds);
+
+#elif ROS_DEBUG
+
 /**
  * Transmits the message over ROS
  * @param omegaRef The referenceSpeed struct to transmit
  */
 void transmitMsg(RefSpeed omegaRef);
+
+#endif
 
 #endif //JOYSTICK_MICROROSFUNCTIONS_H

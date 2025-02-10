@@ -30,3 +30,16 @@ uint16_t ultrasonicDistance(Adafruit_ADS1115 &adc, uint8_t pinNumber){
 #endif
     return distance;
 }
+
+//adc0 is joystick and adc1 is dedicated ADC
+USData allUltrasonicDistance(Adafruit_ADS1115 &adc0, Adafruit_ADS1115 &adc1){
+    USData usData{};
+
+    usData.us_front_0 = adc0.readADC_SingleEnded(2) * MAX_RANG / ADC_SOLUTION;
+    usData.us_front_1 = adc1.readADC_SingleEnded(0) * MAX_RANG / ADC_SOLUTION;
+    usData.us_back = adc1.readADC_SingleEnded(1) * MAX_RANG / ADC_SOLUTION;
+    usData.us_left = adc1.readADC_SingleEnded(2) * MAX_RANG / ADC_SOLUTION;
+    usData.us_right = adc1.readADC_SingleEnded(3) * MAX_RANG / ADC_SOLUTION;
+
+    return usData;
+}

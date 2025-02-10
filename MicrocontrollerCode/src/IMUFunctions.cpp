@@ -2,7 +2,7 @@
 // Created by Robbie on 11/13/24.
 //
 
-#include "../../Joystick/include/IMUFunctions.h"
+#include "IMUFunctions.h"
 
 #include <Arduino.h>
 #include <Adafruit_ICM20X.h>
