@@ -27,7 +27,7 @@ struct FanDutyCycles{
 #define FAN_2 20
 #define FAN_3 22
 
-static float frequency = 25000;
+
 
 //TODO add fuctions to read individual and all fan speeds
 

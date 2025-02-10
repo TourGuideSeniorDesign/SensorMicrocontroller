@@ -6,6 +6,8 @@
 #include "FanFunctions.h"
 #include "PWMFunctions.h"
 
+static float frequency = 25000;
+
 void setFanIndividual(uint8_t fan, uint8_t dutyCycle){
     setPWM(fan, frequency, dutyCycle);
 }
@@ -24,4 +26,5 @@ FanSpeeds getAllFanSpeeds(){
     speeds.fan_speed_1 = 0;
     speeds.fan_speed_2 = 0;
     speeds.fan_speed_3 = 0;
+    return speeds;
 }

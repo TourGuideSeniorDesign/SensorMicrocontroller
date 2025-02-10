@@ -9,6 +9,7 @@
 #include "UltrasonicFunctions.h"
 #include "PIRFunctions.h"
 #include "FanFunctions.h"
+#include "IMUFunctions.h"
 
 /**
  * Sets up microROS communication
@@ -20,7 +21,7 @@ void microRosSetup(unsigned int timerValue, const char* nodeName, const char* to
 
 
 #ifdef ROS
-void transmitMsg(RefSpeed omegaRef, USData ultrasonicData, PIRSensors pirSensors, FanSpeeds fanSpeeds);
+void transmitMsg(RefSpeed omegaRef, USData ultrasonicData, PIRSensors pirSensors, FanSpeeds fanSpeeds, IMUData imuData);
 
 #elif ROS_DEBUG
 

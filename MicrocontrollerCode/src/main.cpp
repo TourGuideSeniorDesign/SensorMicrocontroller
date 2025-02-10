@@ -11,12 +11,8 @@
 
 
 
-#ifdef ROS
+#if defined(ROS) || defined(ROS_DEBUG)
 #include <microRosFunctions.h>
-
-#elif ROS_DEBUG
-#include <microRosFunctions.h>
-
 #endif
 
 Adafruit_ADS1115 joystickAdc;
@@ -65,7 +61,7 @@ void loop() {
 
     #ifdef ROS
 
-    transmitMsg(omegaRef, usDistances, pirSensors, fanSpeeds);
+    transmitMsg(omegaRef, usDistances, pirSensors, fanSpeeds, imuData);
 
     #elif ROS_DEBUG
 
