@@ -10,6 +10,9 @@
 
 static float frequency = 25000;
 
+static volatile uint32_t pulse_count = 0;
+static uint32_t rpm = 0;
+
 void setFanIndividual(uint8_t fan, uint8_t dutyCycle){
     setPWM(fan, frequency, dutyCycle);
 }
@@ -31,7 +34,31 @@ FanSpeeds getAllFanSpeeds(){
     return speeds;
 }
 
+void setupRPMCounter(){
+    pinMode(TACH_0, INPUT);
+    attachInterrupt(digitalPinToInterrupt(TACH_0), handleTachInterrupt, FALLING);
+}
 
+static void handleTachInterrupt() {
+    pulse_count++;
+}
+
+uint32_t getRPM(){
+    static uint32_t last_pulse_count = 0;
+    static uint32_t last_time = 0;
+
+    uint32_t current_time = millis();
+    if (current_time - last_time >= 1000) {  // Calculate RPM every second
+        uint32_t pulses = pulse_count - last_pulse_count;
+        last_pulse_count = pulse_count;
+        last_time = current_time;
+
+        // Assuming the fan gives 2 pulses per revolution
+        rpm = (pulses * 60) / 2;
+
+    }
+    return rpm;
+}
 
 
 

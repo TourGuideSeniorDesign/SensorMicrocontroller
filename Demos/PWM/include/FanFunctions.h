@@ -41,8 +41,9 @@ void setAllFans(FanDutyCycles dutyCycles);
 
 FanSpeeds getAllFanSpeeds();
 
-void initRPMCounter();
+void setupRPMCounter();
 
+static void handleTachInterrupt();
 
 uint32_t getRPM();
 
