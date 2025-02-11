@@ -5,7 +5,7 @@
 #define PWM_PIN0 16  // Choose a valid PWM-capable GPIO pin
 
 void setup() {
-    setFanIndividual(PWM_PIN0, 20);  // 1 kHz, 50% duty cycle
+    setFanIndividual(PWM_PIN0, 25);  // 1 kHz, 50% duty cycle
     initRPMCounter();
 }
 

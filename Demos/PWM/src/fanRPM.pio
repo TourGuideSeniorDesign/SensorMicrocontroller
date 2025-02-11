@@ -1,5 +1,9 @@
 ;To compile this, you need the pico-sdk to be installed
 ;you would run "pioasm -o c-sdk fanRPM.pio fanRPM.pio.h"
+
+
+.pio_version 0
+
 .program rpm_counter
     wait 1 pin 0
     wait 0 pin 0

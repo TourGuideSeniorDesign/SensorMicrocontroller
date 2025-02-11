@@ -31,7 +31,7 @@ FanSpeeds getAllFanSpeeds(){
     return speeds;
 }
 
-#define TACH_PIN 21 // Example tachometer pin
+#define TACH_PIN 17 // Example tachometer pin
 
 PIO pio = pio0;
 uint sm = 0;
@@ -40,6 +40,15 @@ void initRPMCounter() {
     uint offset = pio_add_program(pio, &rpm_counter_program);
     sm = pio_claim_unused_sm(pio, true);
     rpm_counter_program_init(pio, sm, offset, TACH_PIN);
+}
+
+void rpm_counter_program_init(PIO pio, uint sm, uint offset, uint pin) {
+    pio_sm_config c = rpm_counter_program_get_default_config(offset);
+    sm_config_set_clkdiv(&c, 1.0f);
+    sm_config_set_in_pins(&c, pin);
+    sm_config_set_jmp_pin(&c, pin);
+    pio_sm_init(pio, sm, offset, &c);
+    pio_sm_set_enabled(pio, sm, true);
 }
 
 uint32_t getRPM() {

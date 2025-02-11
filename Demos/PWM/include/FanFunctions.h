@@ -6,6 +6,7 @@
 #define MICROCONTROLLERCODE_FANFUNCTIONS_H
 
 #include "Arduino.h"
+#include "hardware/pio.h"
 
 struct FanSpeeds{
     int16_t fan_speed_0;
@@ -38,6 +39,8 @@ void setAllFans(FanDutyCycles dutyCycles);
 FanSpeeds getAllFanSpeeds();
 
 void initRPMCounter();
+
+void rpm_counter_program_init(PIO pio, uint sm, uint offset, uint pin);
 
 uint32_t getRPM();
 
