@@ -37,4 +37,8 @@ void setAllFans(FanDutyCycles dutyCycles);
 
 FanSpeeds getAllFanSpeeds();
 
+void initRPMCounter();
+
+uint32_t getRPM();
+
 #endif //MICROCONTROLLERCODE_FANFUNCTIONS_H
