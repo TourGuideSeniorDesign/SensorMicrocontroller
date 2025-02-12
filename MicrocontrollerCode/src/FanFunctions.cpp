@@ -7,8 +7,10 @@
 #include "PWMFunctions.h"
 #include "hardware/pio.h"
 
-
 static float frequency = 25000;
+
+static volatile int16_t pulse_count[4] = {0, 0, 0, 0};
+static volatile int16_t rpm[4] = {0, 0, 0, 0};
 
 void setFanIndividual(uint8_t fan, uint8_t dutyCycle){
     setPWM(fan, frequency, dutyCycle);
@@ -24,13 +26,73 @@ void setAllDutyCycles(FanDutyCycles dutyCycles){
 //TODO figure out how to read the actual fan speeds
 FanSpeeds getAllFanSpeeds(){
     FanSpeeds speeds{};
-    speeds.fan_speed_0 = 0;
-    speeds.fan_speed_1 = 0;
-    speeds.fan_speed_2 = 0;
-    speeds.fan_speed_3 = 0;
+
+    static int16_t last_pulse_count[4] = {0, 0, 0, 0};
+    static int16_t last_time[4] = {0, 0, 0, 0};
+
+    uint32_t current_time = millis();
+    for (uint8_t fanIndex = 0; fanIndex < 4; fanIndex++) {
+        if (current_time - last_time[fanIndex] >= 1000) {  // Calculate RPM every second
+            int16_t pulses = pulse_count[fanIndex] - last_pulse_count[fanIndex];
+            last_pulse_count[fanIndex] = pulse_count[fanIndex];
+            last_time[fanIndex] = current_time;
+
+            // Assuming the fan gives 2 pulses per revolution
+            rpm[fanIndex] = (pulses * 60) / 2;
+        }
+    }
+
+    speeds.fan_speed_0 = rpm[0];
+    speeds.fan_speed_1 = rpm[1];
+    speeds.fan_speed_2 = rpm[2];
+    speeds.fan_speed_3 = rpm[3];
+
     return speeds;
 }
 
+
+void setupRPMCounter(){
+    pinMode(TACH_0, INPUT);
+    pinMode(TACH_1, INPUT);
+    pinMode(TACH_2, INPUT);
+    pinMode(TACH_3, INPUT);
+    attachInterrupt(digitalPinToInterrupt(TACH_0), handleTach0Interrupt, FALLING);
+    attachInterrupt(digitalPinToInterrupt(TACH_1), handleTach1Interrupt, FALLING);
+    attachInterrupt(digitalPinToInterrupt(TACH_2), handleTach2Interrupt, FALLING);
+    attachInterrupt(digitalPinToInterrupt(TACH_3), handleTach3Interrupt, FALLING);
+}
+
+static void handleTach0Interrupt() {
+    pulse_count[0]++;
+}
+
+static void handleTach1Interrupt() {
+    pulse_count[1]++;
+}
+
+static void handleTach2Interrupt() {
+    pulse_count[2]++;
+}
+
+static void handleTach3Interrupt() {
+    pulse_count[3]++;
+}
+
+uint32_t getRPM(uint8_t fanIndex){
+    static uint32_t last_pulse_count[4] = {0, 0, 0, 0};
+    static uint32_t last_time[4] = {0, 0, 0, 0};
+
+    uint32_t current_time = millis();
+    if (current_time - last_time[fanIndex] >= 1000) {  // Calculate RPM every second
+        uint32_t pulses = pulse_count[fanIndex] - last_pulse_count[fanIndex];
+        last_pulse_count[fanIndex] = pulse_count[fanIndex];
+        last_time[fanIndex] = current_time;
+
+        // Assuming the fan gives 2 pulses per revolution
+        rpm[fanIndex] = (pulses * 60) / 2;
+    }
+    return rpm[fanIndex];
+}
 
 
 

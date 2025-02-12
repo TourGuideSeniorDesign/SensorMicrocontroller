@@ -26,8 +26,11 @@ struct FanDutyCycles{
 #define FAN_0 16
 #define TACH_0 17
 #define FAN_1 18
+#define TACH_1 19
 #define FAN_2 20
+#define TACH_2 21
 #define FAN_3 22
+#define TACH_3 23
 
 
 
@@ -40,5 +43,17 @@ void setFanIndividual(uint8_t fan, uint8_t dutyCycle);
 void setAllFans(FanDutyCycles dutyCycles);
 
 FanSpeeds getAllFanSpeeds();
+
+void setupRPMCounter();
+
+static void handleTach0Interrupt();
+
+static void handleTach1Interrupt();
+
+static void handleTach2Interrupt();
+
+static void handleTach3Interrupt();
+
+uint32_t getRPM(uint8_t fanIndex);
 
 #endif //MICROCONTROLLERCODE_FANFUNCTIONS_H

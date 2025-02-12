@@ -42,20 +42,33 @@ void setup(void) {
         delay(10);
     }
 
-    adcInit(joystickAdc, 0x48); //default address
-    imuInit(icm, ICM20948_ACCEL_RANGE_2_G, ICM20948_GYRO_RANGE_250_DPS, AK09916_MAG_DATARATE_10_HZ);
+    //adcInit(joystickAdc, 0x48); //default address
+    //imuInit(icm, ICM20948_ACCEL_RANGE_2_G, ICM20948_GYRO_RANGE_250_DPS, AK09916_MAG_DATARATE_10_HZ);
     setupFingerprint();
     setFanIndividual(FAN_0, dutyCycle0);
+    setupRPMCounter();
 }
 
 void loop() {
-    RefSpeed omegaRef = joystickToSpeed(joystickAdc);
+    //RefSpeed omegaRef = joystickToSpeed(joystickAdc);
     //uint16_t usDistance = ultrasonicDistance(joystickAdc, 2);
-    USData usDistances = allUltrasonicDistance(joystickAdc, ultrasonicAdc);
+    //USData usDistances = allUltrasonicDistance(joystickAdc, ultrasonicAdc);
     PIRSensors pirSensors = readAllPIR();
     uint8_t fingerID = getFingerprintID();
-    IMUData imuData = getIMUData(icm);
+    //IMUData imuData = getIMUData(icm);
     FanSpeeds fanSpeeds = getAllFanSpeeds();
+
+    //Used for debugging purposes while I don't have the ADC
+    RefSpeed omegaRef{};
+    omegaRef.rightSpeed = 0;
+    omegaRef.leftSpeed = 0;
+
+    USData usDistances{};
+    usDistances.us_front_0 = 0;
+    usDistances.us_front_1 = 0;
+    usDistances.us_back = 0;
+    usDistances.us_left = 0;
+    usDistances.us_right = 0;
 
 
     #ifdef ROS
@@ -72,6 +85,14 @@ void loop() {
 
 
     #elif DEBUG
+    Serial.print("Fan0 Speed: ");
+    Serial.println(fanSpeeds.fan_speed_0);
+    Serial.print("Fan1 Speed: ");
+    Serial.println(fanSpeeds.fan_speed_1);
+    Serial.print("Fan2 Speed: ");
+    Serial.println(fanSpeeds.fan_speed_2);
+    Serial.print("Fan3 Speed: ");
+    Serial.println(fanSpeeds.fan_speed_3);
     Serial.print("Right Speed: ");
     Serial.println(omegaRef.rightSpeed);
     Serial.print("Left Speed: ");
@@ -88,28 +109,28 @@ void loop() {
     Serial.println(pirSensors.pir3);
     Serial.print("Fingerprint ID: ");
     Serial.println(fingerID);
-    delay(50);
 
-    Serial.print("Accel X: ");
-    Serial.print(imuData.accel_x);
-    Serial.print(" \tY: ");
-    Serial.print(imuData.accel_y);
-    Serial.print(" \tZ: ");
-    Serial.println(imuData.accel_z);
 
-    Serial.print("Gyro X: ");
-    Serial.print(imuData.gyro_x);
-    Serial.print(" \tY: ");
-    Serial.print(imuData.gyro_y);
-    Serial.print(" \tZ: ");
-    Serial.println(imuData.gyro_z);
-
-    Serial.print("Mag X: ");
-    Serial.print(imuData.mag_x);
-    Serial.print(" \tY: ");
-    Serial.print(imuData.mag_y);
-    Serial.print(" \tZ: ");
-    Serial.println(imuData.mag_z);
+    // Serial.print("Accel X: ");
+    // Serial.print(imuData.accel_x);
+    // Serial.print(" \tY: ");
+    // Serial.print(imuData.accel_y);
+    // Serial.print(" \tZ: ");
+    // Serial.println(imuData.accel_z);
+    //
+    // Serial.print("Gyro X: ");
+    // Serial.print(imuData.gyro_x);
+    // Serial.print(" \tY: ");
+    // Serial.print(imuData.gyro_y);
+    // Serial.print(" \tZ: ");
+    // Serial.println(imuData.gyro_z);
+    //
+    // Serial.print("Mag X: ");
+    // Serial.print(imuData.mag_x);
+    // Serial.print(" \tY: ");
+    // Serial.print(imuData.mag_y);
+    // Serial.print(" \tZ: ");
+    // Serial.println(imuData.mag_z);
     #endif
 
 }
