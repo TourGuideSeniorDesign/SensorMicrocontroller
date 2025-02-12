@@ -19,7 +19,8 @@ Adafruit_ADS1115 joystickAdc;
 Adafruit_ADS1115 ultrasonicAdc;// Construct an ads1115
 Adafruit_ICM20948 icm;
 
-uint8_t dutyCycle0 = 25;
+
+
 
 void setup(void) {
     Serial.begin(115200);
@@ -27,7 +28,7 @@ void setup(void) {
     adcInit(joystickAdc, 0x48); //default address
     imuInit(icm, ICM20948_ACCEL_RANGE_2_G, ICM20948_GYRO_RANGE_250_DPS, AK09916_MAG_DATARATE_10_HZ);
     setupFingerprint();
-    setFanIndividual(FAN_0, dutyCycle0);
+    setFanIndividual(FAN_0, 25);
     setupRPMCounter();
 
     #ifdef ROS
@@ -52,13 +53,14 @@ void setup(void) {
 }
 
 void loop() {
+    //TODO might want to figure out how to put these on core1 so that they can run in parallel
     RefSpeed omegaRef = joystickToSpeed(joystickAdc);
-    uint16_t usDistance = ultrasonicDistance(joystickAdc, 2);
+    //uint16_t usDistance = ultrasonicDistance(joystickAdc, 2);
     USData usDistances = allUltrasonicDistance(joystickAdc, ultrasonicAdc);
     PIRSensors pirSensors = readAllPIR();
-    uint8_t fingerID = getFingerprintID();
+    uint8_t fingerID = getFingerprintID(); //TODO might want to put this on a timer so that it runs less frequently
     IMUData imuData = getIMUData(icm);
-    FanSpeeds fanSpeeds = getAllFanSpeeds();
+    FanSpeeds fanSpeeds = getAllFanSpeeds(); //TODO might want to put on a timer as well
 
     // //Used for debugging purposes while I don't have the ADC
     // RefSpeed omegaRef{};

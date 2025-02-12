@@ -34,8 +34,6 @@ struct FanDutyCycles{
 
 
 
-
-
 //TODO add fuctions to read individual and all fan speeds
 
 void setFanIndividual(uint8_t fan, uint8_t dutyCycle);

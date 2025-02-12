@@ -18,7 +18,7 @@ void setFanIndividual(uint8_t fan, uint8_t dutyCycle){
     setPWM(fan, frequency, dutyCycle);
 }
 
-void setAllDutyCycles(FanDutyCycles dutyCycles){
+void setAllFans(FanDutyCycles dutyCycles){
     setPWM(FAN_0, frequency, dutyCycles.fan_0_duty_cycle);
     setPWM(FAN_1, frequency, dutyCycles.fan_1_duty_cycle);
     setPWM(FAN_2, frequency, dutyCycles.fan_2_duty_cycle);
