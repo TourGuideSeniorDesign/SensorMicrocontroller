@@ -26,8 +26,11 @@ struct FanDutyCycles{
 #define FAN_0 16
 #define TACH_0 17
 #define FAN_1 18
+#define TACH_1 19
 #define FAN_2 20
+#define TACH_2 21
 #define FAN_3 22
+#define TACH_3 23
 
 
 
@@ -43,7 +46,13 @@ FanSpeeds getAllFanSpeeds();
 
 void setupRPMCounter();
 
-static void handleTachInterrupt();
+static void handleTach0Interrupt();
+
+static void handleTach1Interrupt();
+
+static void handleTach2Interrupt();
+
+static void handleTach3Interrupt();
 
 uint32_t getRPM();
 
