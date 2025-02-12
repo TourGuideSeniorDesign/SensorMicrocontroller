@@ -70,6 +70,7 @@ void loop() {
     usDistances.us_left = 0;
     usDistances.us_right = 0;
 
+    IMUData imuData{};
 
     #ifdef ROS
 
