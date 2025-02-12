@@ -21,3 +21,4 @@ void setPWM(uint pin, float frequency, float duty_cycle) {
 
     pwm_set_enabled(slice, true);
 }
+
