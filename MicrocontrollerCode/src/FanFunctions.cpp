@@ -9,6 +9,8 @@
 
 static float frequency = 25000;
 
+static volatile uint32_t pulse_count_single = 0;
+static uint32_t rpm_test = 0;
 static volatile int16_t pulse_count[4] = {0, 0, 0, 0};
 static volatile int16_t rpm[4] = {0, 0, 0, 0};
 
@@ -24,18 +26,19 @@ void setAllDutyCycles(FanDutyCycles dutyCycles){
 }
 
 //TODO figure out how to read the actual fan speeds
-FanSpeeds getAllFanSpeeds(){
-    FanSpeeds speeds{};
 
-    static int16_t last_pulse_count[4] = {0, 0, 0, 0};
-    static int16_t last_time[4] = {0, 0, 0, 0};
+static int16_t last_pulse_count_test[4] = {0, 0, 0, 0};
+static uint32_t last_time_test[4] = {0, 0, 0, 0};
+
+FanSpeeds getAllFanSpeeds() {
+    FanSpeeds speeds{};
 
     uint32_t current_time = millis();
     for (uint8_t fanIndex = 0; fanIndex < 4; fanIndex++) {
-        if (current_time - last_time[fanIndex] >= 1000) {  // Calculate RPM every second
-            int16_t pulses = pulse_count[fanIndex] - last_pulse_count[fanIndex];
-            last_pulse_count[fanIndex] = pulse_count[fanIndex];
-            last_time[fanIndex] = current_time;
+        if (current_time - last_time_test[fanIndex] >= 1000) {  // Calculate RPM every second
+            uint32_t pulses = pulse_count[fanIndex] - last_pulse_count_test[fanIndex];
+            last_pulse_count_test[fanIndex] = pulse_count[fanIndex];
+            last_time_test[fanIndex] = current_time;
 
             // Assuming the fan gives 2 pulses per revolution
             rpm[fanIndex] = (pulses * 60) / 2;
@@ -64,6 +67,7 @@ void setupRPMCounter(){
 
 static void handleTach0Interrupt() {
     pulse_count[0]++;
+    pulse_count_single++;
 }
 
 static void handleTach1Interrupt() {
@@ -78,20 +82,21 @@ static void handleTach3Interrupt() {
     pulse_count[3]++;
 }
 
-uint32_t getRPM(uint8_t fanIndex){
-    static uint32_t last_pulse_count[4] = {0, 0, 0, 0};
-    static uint32_t last_time[4] = {0, 0, 0, 0};
+static uint32_t last_time = 0;
+uint32_t getRPM(){
+    static uint32_t last_pulse_count = 0;
 
     uint32_t current_time = millis();
-    if (current_time - last_time[fanIndex] >= 1000) {  // Calculate RPM every second
-        uint32_t pulses = pulse_count[fanIndex] - last_pulse_count[fanIndex];
-        last_pulse_count[fanIndex] = pulse_count[fanIndex];
-        last_time[fanIndex] = current_time;
+    if (current_time - last_time >= 1000) {  // Calculate RPM every second
+        uint32_t pulses = pulse_count_single - last_pulse_count;
+        last_pulse_count = pulse_count_single;
+        last_time = current_time;
 
         // Assuming the fan gives 2 pulses per revolution
-        rpm[fanIndex] = (pulses * 60) / 2;
+        rpm_test = (pulses * 60) / 2;
+
     }
-    return rpm[fanIndex];
+    return rpm_test;
 }
 
 

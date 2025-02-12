@@ -24,6 +24,12 @@ uint8_t dutyCycle0 = 25;
 void setup(void) {
     Serial.begin(115200);
 
+    adcInit(joystickAdc, 0x48); //default address
+    imuInit(icm, ICM20948_ACCEL_RANGE_2_G, ICM20948_GYRO_RANGE_250_DPS, AK09916_MAG_DATARATE_10_HZ);
+    setupFingerprint();
+    setFanIndividual(FAN_0, dutyCycle0);
+    setupRPMCounter();
+
     #ifdef ROS
 
     const char* nodeName = "sensors_node";
@@ -42,35 +48,31 @@ void setup(void) {
         delay(10);
     }
 
-    //adcInit(joystickAdc, 0x48); //default address
-    //imuInit(icm, ICM20948_ACCEL_RANGE_2_G, ICM20948_GYRO_RANGE_250_DPS, AK09916_MAG_DATARATE_10_HZ);
-    setupFingerprint();
-    setFanIndividual(FAN_0, dutyCycle0);
-    setupRPMCounter();
+
 }
 
 void loop() {
-    //RefSpeed omegaRef = joystickToSpeed(joystickAdc);
-    //uint16_t usDistance = ultrasonicDistance(joystickAdc, 2);
-    //USData usDistances = allUltrasonicDistance(joystickAdc, ultrasonicAdc);
+    RefSpeed omegaRef = joystickToSpeed(joystickAdc);
+    uint16_t usDistance = ultrasonicDistance(joystickAdc, 2);
+    USData usDistances = allUltrasonicDistance(joystickAdc, ultrasonicAdc);
     PIRSensors pirSensors = readAllPIR();
     uint8_t fingerID = getFingerprintID();
-    //IMUData imuData = getIMUData(icm);
+    IMUData imuData = getIMUData(icm);
     FanSpeeds fanSpeeds = getAllFanSpeeds();
 
-    //Used for debugging purposes while I don't have the ADC
-    RefSpeed omegaRef{};
-    omegaRef.rightSpeed = 0;
-    omegaRef.leftSpeed = 0;
-
-    USData usDistances{};
-    usDistances.us_front_0 = 0;
-    usDistances.us_front_1 = 0;
-    usDistances.us_back = 0;
-    usDistances.us_left = 0;
-    usDistances.us_right = 0;
-
-    IMUData imuData{};
+    // //Used for debugging purposes while I don't have the ADC
+    // RefSpeed omegaRef{};
+    // omegaRef.rightSpeed = 0;
+    // omegaRef.leftSpeed = 0;
+    //
+    // USData usDistances{};
+    // usDistances.us_front_0 = 0;
+    // usDistances.us_front_1 = 0;
+    // usDistances.us_back = 0;
+    // usDistances.us_left = 0;
+    // usDistances.us_right = 0;
+    //
+    // IMUData imuData{};
 
     #ifdef ROS
 
@@ -112,26 +114,26 @@ void loop() {
     Serial.println(fingerID);
 
 
-    // Serial.print("Accel X: ");
-    // Serial.print(imuData.accel_x);
-    // Serial.print(" \tY: ");
-    // Serial.print(imuData.accel_y);
-    // Serial.print(" \tZ: ");
-    // Serial.println(imuData.accel_z);
-    //
-    // Serial.print("Gyro X: ");
-    // Serial.print(imuData.gyro_x);
-    // Serial.print(" \tY: ");
-    // Serial.print(imuData.gyro_y);
-    // Serial.print(" \tZ: ");
-    // Serial.println(imuData.gyro_z);
-    //
-    // Serial.print("Mag X: ");
-    // Serial.print(imuData.mag_x);
-    // Serial.print(" \tY: ");
-    // Serial.print(imuData.mag_y);
-    // Serial.print(" \tZ: ");
-    // Serial.println(imuData.mag_z);
+    Serial.print("Accel X: ");
+    Serial.print(imuData.accel_x);
+    Serial.print(" \tY: ");
+    Serial.print(imuData.accel_y);
+    Serial.print(" \tZ: ");
+    Serial.println(imuData.accel_z);
+
+    Serial.print("Gyro X: ");
+    Serial.print(imuData.gyro_x);
+    Serial.print(" \tY: ");
+    Serial.print(imuData.gyro_y);
+    Serial.print(" \tZ: ");
+    Serial.println(imuData.gyro_z);
+
+    Serial.print("Mag X: ");
+    Serial.print(imuData.mag_x);
+    Serial.print(" \tY: ");
+    Serial.print(imuData.mag_y);
+    Serial.print(" \tZ: ");
+    Serial.println(imuData.mag_z);
     #endif
 
 }
