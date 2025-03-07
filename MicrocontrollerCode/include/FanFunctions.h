@@ -30,7 +30,7 @@ struct FanDutyCycles{
 #define FAN_2 20
 #define TACH_2 21
 #define FAN_3 22
-#define TACH_3 23
+#define TACH_3 26
 
 
 
