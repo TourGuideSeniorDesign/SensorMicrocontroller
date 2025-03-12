@@ -5,6 +5,7 @@
 #include "microRosFunctions.h"
 #include "JoystickFunctions.h"
 #include "FanFunctions.h"
+#include "LightFunctions.h"
 #include <Arduino.h>
 #include <micro_ros_platformio.h>
 
@@ -202,7 +203,8 @@ static void fan_subscription_callback(const void *msgin) {
 
 static void light_subscription_callback(const void *msgin) {
     const auto *msg = (const wheelchair_sensor_msgs__msg__Light *) msgin;
-    //TODO add the light control
+    const int lightState = msg->state;
+    setLight(lightState);
 }
 
 #elif ROS_DEBUG

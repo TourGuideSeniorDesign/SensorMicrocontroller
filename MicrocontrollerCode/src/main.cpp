@@ -8,6 +8,7 @@
 #include "PIRFunctions.h"
 #include "IMUFunctions.h"
 #include "FanFunctions.h"
+#include "LightFunctions.h"
 
 
 
@@ -25,11 +26,15 @@ Adafruit_ICM20948 icm;
 void setup(void) {
     Serial.begin(115200);
 
+    delay(5000);
+
+    adcInit(ultrasonicAdc, 0x49); //default address
     adcInit(joystickAdc, 0x48); //default address
     imuInit(icm, ICM20948_ACCEL_RANGE_2_G, ICM20948_GYRO_RANGE_250_DPS, AK09916_MAG_DATARATE_10_HZ);
     setupFingerprint();
     setFanIndividual(FAN_0, 25);
     setupRPMCounter();
+    setupLight();
 
     #ifdef ROS
 
@@ -62,7 +67,6 @@ void loop() {
     //uint32_t start = millis();
     RefSpeed omegaRef = joystickToSpeed(joystickAdc);
     //uint32_t joystickTime = millis() - start;
-    //uint16_t usDistance = ultrasonicDistance(joystickAdc, 2);
     USData usDistances = allUltrasonicDistance(joystickAdc, ultrasonicAdc);
     //uint32_t ultrasonicTime = millis() - start - joystickTime;
     PIRSensors pirSensors = readAllPIR();
@@ -82,19 +86,6 @@ void loop() {
     }
 
 
-    // //Used for debugging purposes while I don't have the ADC
-    // RefSpeed omegaRef{};
-    // omegaRef.rightSpeed = 0;
-    // omegaRef.leftSpeed = 0;
-    //
-    // USData usDistances{};
-    // usDistances.us_front_0 = 0;
-    // usDistances.us_front_1 = 0;
-    // usDistances.us_back = 0;
-    // usDistances.us_left = 0;
-    // usDistances.us_right = 0;
-    //
-    // IMUData imuData{};
 
     #ifdef ROS
 
