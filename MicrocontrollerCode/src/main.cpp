@@ -9,6 +9,7 @@
 #include "IMUFunctions.h"
 #include "FanFunctions.h"
 #include "LightFunctions.h"
+#include "LidarFunctions.h"
 
 
 
@@ -35,6 +36,7 @@ void setup(void) {
     setFanIndividual(FAN_0, 25);
     setupRPMCounter();
     setupLight();
+    setupLidar();
 
     #ifdef ROS
 

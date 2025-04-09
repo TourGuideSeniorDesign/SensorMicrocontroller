@@ -9,7 +9,7 @@
 
 #define LIDAR_PIN 7
 
-void lidarSetup();
+void setupLidar();
 
 void lidarState(boolean status);
 

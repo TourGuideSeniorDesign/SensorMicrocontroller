@@ -5,7 +5,7 @@
 #include <Arduino.h>
 #include "LidarFunctions.h"
 
-void lidarSetup(){
+void setupLidar(){
     pinMode(LIDAR_PIN, OUTPUT);
     lidarState(false);
 }
