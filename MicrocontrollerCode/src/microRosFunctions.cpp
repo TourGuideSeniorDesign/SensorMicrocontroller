@@ -6,6 +6,7 @@
 #include "JoystickFunctions.h"
 #include "FanFunctions.h"
 #include "LightFunctions.h"
+#include "LidarFunctions.h"
 #include <Arduino.h>
 #include <micro_ros_platformio.h>
 
@@ -18,6 +19,7 @@
 #include <wheelchair_sensor_msgs/msg/fingerprint.h>
 #include <wheelchair_sensor_msgs/msg/fan_speed.h>
 #include <wheelchair_sensor_msgs/msg/light.h>
+#include <wheelchair_sensor_msgs/msg/lidar.h>
 
 
 #ifdef ROS_DEBUG
@@ -30,9 +32,11 @@ rcl_publisher_t fingerprintPublisher;
 
 rcl_subscription_t fanSubscriber;
 rcl_subscription_t lightSubscriber;
+rcl_subscription_t lidarSubscriber;
 
 wheelchair_sensor_msgs__msg__FanSpeed fanMsg;
 wheelchair_sensor_msgs__msg__Light lightMsg;
+wheelchair_sensor_msgs__msg__Lidar lidarMsg;
 #ifdef ROS
 wheelchair_sensor_msgs__msg__Sensors sensorMsg;
 #elif ROS_DEBUG
@@ -131,14 +135,24 @@ RCCHECK(rclc_publisher_init_best_effort(
         ROSIDL_GET_MSG_TYPE_SUPPORT(wheelchair_sensor_msgs, msg, Light),
         "light"));
 
+    //Create subscriber
+    RCCHECK(rclc_subscription_init_default(
+        &lidarSubscriber,
+        &node,
+        ROSIDL_GET_MSG_TYPE_SUPPORT(wheelchair_sensor_msgs, msg, Lidar),
+        "lidar"));
+
 
     // create executor
     //Number of handles = # timers + # subscriptions + # clients + # services
-    RCCHECK(rclc_executor_init(&executor, &support.context, 3, &allocator));
+    RCCHECK(rclc_executor_init(&executor, &support.context, 4, &allocator));
     RCCHECK(
         rclc_executor_add_subscription(&executor, &fanSubscriber, &fanMsg, &fan_subscription_callback, ON_NEW_DATA));
     RCCHECK(
         rclc_executor_add_subscription(&executor, &lightSubscriber, &lightMsg, &light_subscription_callback, ON_NEW_DATA
+        ));
+    RCCHECK(
+        rclc_executor_add_subscription(&executor, &lidarSubscriber, &lidarMsg, &lidar_subscription_callback, ON_NEW_DATA
         ));
     RCCHECK(rclc_executor_add_timer(&executor, &timer));
 
@@ -206,6 +220,15 @@ static void light_subscription_callback(const void *msgin) {
     const int lightState = msg->state;
     setLight(lightState);
 }
+
+static void lidar_subscription_callback(const void *msgin){
+        const auto *msg = (const wheelchair_sensor_msgs__msg__Lidar *) msgin;
+        if(msg->state == 0){
+            lidarState(false);
+        } else if(msg->state == 1){
+            lidarState(true);
+        }
+    }
 
 #elif ROS_DEBUG
 
