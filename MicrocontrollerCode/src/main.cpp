@@ -29,11 +29,13 @@ void setup(void) {
 
     delay(5000);
 
+    FanDutyCycles startDutyCycles{};
+
     adcInit(ultrasonicAdc, 0x49); //default address
     adcInit(joystickAdc, 0x48); //default address
     imuInit(icm, ICM20948_ACCEL_RANGE_2_G, ICM20948_GYRO_RANGE_250_DPS, AK09916_MAG_DATARATE_10_HZ);
     setupFingerprint();
-    setFanIndividual(FAN_0, 25);
+    setAllFans(startDutyCycles);
     setupRPMCounter();
     setupLight();
     setupLidar();
