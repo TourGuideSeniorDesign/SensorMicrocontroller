@@ -30,6 +30,10 @@ void setup(void) {
     delay(5000);
 
     FanDutyCycles startDutyCycles{};
+    startDutyCycles.fan_0_duty_cycle = 0;
+    startDutyCycles.fan_1_duty_cycle = 0;
+    startDutyCycles.fan_2_duty_cycle = 0;
+    startDutyCycles.fan_3_duty_cycle = 0;
 
     adcInit(ultrasonicAdc, 0x49); //default address
     adcInit(joystickAdc, 0x48); //default address
@@ -45,13 +49,14 @@ void setup(void) {
     const char* nodeName = "sensors_node";
     const char* sensorTopicName = "sensors";
     const char* fingerprintTopicName = "fingerprint";
-    microRosSetup(1, nodeName, sensorTopicName, fingerprintTopicName);
+
+    while(!microRosSetup(1, nodeName, sensorTopicName, fingerprintTopicName));
 
     #elif ROS_DEBUG
 
     const char* nodeName = "sensors_node";
     const char* topicName = "refSpeed";
-    microRosSetup(1, nodeName, topicName);
+    while(!microRosSetup(1, nodeName, topicName));
     #endif
 
     while (!Serial) {

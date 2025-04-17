@@ -72,13 +72,20 @@ void timer_callback(rcl_timer_t *inputTimer, int64_t last_call_time) {
 
 //TODO add the fan subscriber
 #ifdef ROS
-void microRosSetup(unsigned int timer_timeout, const char *nodeName, const char *sensorTopicName,
+boolean microRosSetup(unsigned int timer_timeout, const char *nodeName, const char *sensorTopicName,
                    const char *fingerprintTopicName) {
 #elif ROS_DEBUG
-    void microRosSetup(unsigned int timer_timeout, const char* nodeName, const char* topicName){
+    boolean microRosSetup(unsigned int timer_timeout, const char* nodeName, const char* topicName){
 #endif
     set_microros_serial_transports(Serial);
     delay(2000);
+
+    // Check for agent BEFORE proceeding
+    if (!rmw_uros_ping_agent(100, 3)) { // 100ms timeout, 3 retries
+        printf("Micro-ROS agent not found — skipping setup.\n");
+        return false;
+    }
+
     allocator = rcl_get_default_allocator();
 
     // Set the domain ID
@@ -164,6 +171,7 @@ RCCHECK(rclc_publisher_init_best_effort(
     msg.left_speed = 0;
     msg.right_speed = 0;
 #endif
+    return true;
 }
 
 
