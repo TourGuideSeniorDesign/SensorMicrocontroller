@@ -8,6 +8,7 @@
 #include "LightFunctions.h"
 #include "LidarFunctions.h"
 #include <Arduino.h>
+#include <hardware/watchdog.h>
 #include <micro_ros_platformio.h>
 
 #include <rcl/rcl.h>
@@ -49,6 +50,8 @@ rcl_allocator_t allocator;
 rcl_node_t node;
 rcl_timer_t timer;
 
+boolean agent_connected = false;
+
 #define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){error_loop();}}
 #define RCSOFTCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){}}
 
@@ -80,11 +83,11 @@ boolean microRosSetup(unsigned int timer_timeout, const char *nodeName, const ch
     set_microros_serial_transports(Serial);
     delay(2000);
 
-    // Check for agent BEFORE proceeding
-    if (!rmw_uros_ping_agent(100, 3)) { // 100ms timeout, 3 retries
-        printf("Micro-ROS agent not found — skipping setup.\n");
-        return false;
-    }
+//    // Check for agent BEFORE proceeding
+//    if (!rmw_uros_ping_agent(100, 3)) { // 100ms timeout, 3 retries
+//        printf("Micro-ROS agent not found — skipping setup.\n");
+//        return false;
+//    }
 
     allocator = rcl_get_default_allocator();
 
@@ -174,6 +177,43 @@ RCCHECK(rclc_publisher_init_best_effort(
     return true;
 }
 
+void checkConnection() {
+    // Try spinning and check if connection is alive
+//    if(rmw_uros_ping_agent(500, 10) != RMW_RET_OK){
+//        watchdog_enable(1, 1); // 1 ms timeout
+//        while (1);
+//    }
+
+}
+
+void reconnectAgent() {
+        rmw_context_t * rmw_context = rcl_context_get_rmw_context(&support.context);
+  (void) rmw_uros_set_context_entity_destroy_session_timeout(rmw_context, 0);
+
+    // Clean up old resources
+    RCCHECK(rcl_publisher_fini(&sensorPublisher, &node));
+    RCCHECK(rcl_publisher_fini(&fingerprintPublisher, &node));
+    RCCHECK(rcl_subscription_fini(&fanSubscriber, &node));
+    RCCHECK(rcl_subscription_fini(&lightSubscriber, &node));
+    RCCHECK(rcl_subscription_fini(&lidarSubscriber, &node));
+    RCCHECK(rcl_timer_fini(&timer));
+    RCCHECK(rcl_node_fini(&node));
+    RCCHECK(rclc_executor_fini(&executor));
+    RCCHECK(rclc_support_fini(&support));
+
+
+    const char* nodeName = "sensors_node";
+    const char* sensorTopicName = "sensors";
+    const char* fingerprintTopicName = "fingerprint";
+
+    // Attempt to reinitialize
+    if (microRosSetup(1, nodeName, sensorTopicName, fingerprintTopicName)) {
+        agent_connected = true;
+        Serial.println("Reconnected to Micro-ROS agent.");
+    } else {
+        Serial.println("Reconnection failed.");
+    }
+}
 
 #ifdef ROS
 void transmitMsg(RefSpeed omegaRef, USData ultrasonicData, PIRSensors pirSensors, FanSpeeds fanSpeeds,

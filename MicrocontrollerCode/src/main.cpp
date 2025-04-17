@@ -1,6 +1,8 @@
 #include <Wire.h>
 #include <Adafruit_ADS1X15.h>
 #include <Adafruit_ICM20948.h>
+#include <micro_ros_platformio.h>
+#include <hardware/watchdog.h>
 #include "ADCFunctions.h"
 #include "JoystickFunctions.h"
 #include "UltrasonicFunctions.h"
@@ -24,8 +26,12 @@ Adafruit_ICM20948 icm;
 
 
 
-void setup(void) {
+void setup() {
     Serial.begin(115200);
+
+    while(!Serial){
+        delay(10); //wait for serial
+    }
 
     delay(5000);
 
@@ -68,6 +74,8 @@ void setup(void) {
 
 unsigned long lastFingerprintTime = 0;
 
+unsigned long lastMicroRosTime = 0;
+
 void loop() {
 
     unsigned long currentMillis = millis();
@@ -92,6 +100,17 @@ void loop() {
         lastFingerprintTime = currentMillis;
         fingerID = getFingerprintID();
         //Serial.println("Fingerprint ID: " + String(fingerID));
+    }
+
+    if(currentMillis - lastMicroRosTime >= 25000){
+        lastMicroRosTime = currentMillis;
+        // checking the MicroROS connection to make sure that it is still connected
+//        if (!rmw_uros_ping_agent(100, 10)) {
+//            Serial.println("Lost agent connection. Rebooting...");
+//            //watchdog_enable(1, 1); // 2000 ms (2 seconds) timeout
+//            //while(true);
+//        }
+        checkConnection();
     }
 
 

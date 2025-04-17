@@ -32,6 +32,8 @@ static void light_subscription_callback(const void *msgin);
 
 static void lidar_subscription_callback(const void *msgin);
 
+
+
 #elif ROS_DEBUG
 /**
  * Sets up microROS communication
@@ -47,5 +49,9 @@ boolean microRosSetup(unsigned int timerValue, const char* nodeName, const char*
  */
 void transmitMsg(RefSpeed omegaRef);
 #endif
+
+void checkConnection();
+
+void reconnectAgent();
 
 #endif //JOYSTICK_MICROROSFUNCTIONS_H
