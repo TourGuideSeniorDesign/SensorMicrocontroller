@@ -1,7 +1,7 @@
 #include <Wire.h>
 #include <Adafruit_ADS1X15.h>
 #include <Adafruit_ICM20948.h>
-#include <micro_ros_platformio.h>
+
 #include <hardware/watchdog.h>
 #include "ADCFunctions.h"
 #include "JoystickFunctions.h"
@@ -13,9 +13,8 @@
 #include "LightFunctions.h"
 #include "LidarFunctions.h"
 
-
-
 #if defined(ROS) || defined(ROS_DEBUG)
+#include <micro_ros_platformio.h>
 #include <microRosFunctions.h>
 #endif
 
