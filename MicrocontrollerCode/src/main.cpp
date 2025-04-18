@@ -101,6 +101,8 @@ void loop() {
         //Serial.println("Fingerprint ID: " + String(fingerID));
     }
 
+
+#if defined(ROS) || defined(ROS_DEBUG)
     if(currentMillis - lastMicroRosTime >= 25000){
         lastMicroRosTime = currentMillis;
         // checking the MicroROS connection to make sure that it is still connected
@@ -111,6 +113,7 @@ void loop() {
 //        }
         checkConnection();
     }
+#endif
 
 
 
