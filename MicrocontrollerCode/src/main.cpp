@@ -111,7 +111,7 @@ void loop() {
 //            //watchdog_enable(1, 1); // 2000 ms (2 seconds) timeout
 //            //while(true);
 //        }
-        checkConnection();
+        //checkConnection();
     }
 #endif
 
