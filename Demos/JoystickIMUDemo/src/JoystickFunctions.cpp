@@ -9,7 +9,7 @@
 int diffParam = 30;
 int deadzoneParam = 30;
 
-refSpeed joystickToSpeed(Adafruit_ADS1115 &adc){
+RefSpeed joystickToSpeed(Adafruit_ADS1115 &adc){
     int forwardJoystick = adc.readADC_SingleEnded(0); //a0 is forward/backward
     int sidewaysJoystick = adc.readADC_SingleEnded(1); //a1 is left/right
 
@@ -34,11 +34,12 @@ refSpeed joystickToSpeed(Adafruit_ADS1115 &adc){
 //    Serial.println(sidewaysJoystick);
 
     //setting the speeds
-    refSpeed speeds{};
+    RefSpeed speeds{};
     float k = 0.011; //used for scaling
+    //TODO need to tweak this to
     speeds.leftSpeed = static_cast<int8_t>(clamp(k * (forwardJoystick - sidewaysJoystick), -100.0f, 100.0f));
     speeds.rightSpeed = static_cast<int8_t>(clamp(k * (forwardJoystick + sidewaysJoystick), -100.0f, 100.0f));
-
+    //TODO maybe divide the sideways values by 2?
     //Deadzone
     if(speeds.leftSpeed < deadzoneParam && speeds.leftSpeed > -deadzoneParam && speeds.rightSpeed < deadzoneParam && speeds.rightSpeed > -deadzoneParam){
         speeds.leftSpeed = 0;
