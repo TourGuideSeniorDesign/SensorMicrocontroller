@@ -13,6 +13,9 @@ RefSpeed joystickToSpeed(Adafruit_ADS1115 &adc){
     int forwardJoystick = adc.readADC_SingleEnded(0); //a0 is forward/backward
     int sidewaysJoystick = adc.readADC_SingleEnded(1); //a1 is left/right
 
+    Serial.println("Forward Dac value: " + String(forwardJoystick));
+    Serial.println("Sideways Dac value: " + String(sidewaysJoystick));
+
     /*
      * Joystick middle values: ~8500
      * a0 middle value: ~8500
@@ -28,18 +31,28 @@ RefSpeed joystickToSpeed(Adafruit_ADS1115 &adc){
     forwardJoystick = forwardJoystick - (8500+4400); //The second value is used to zero it out when the ADC gain is set to 0 instead of the default (2/3)
     sidewaysJoystick = sidewaysJoystick - (8400+4400);
 
-//    Serial.print("Forward joystick: ");
-//    Serial.println(forwardJoystick);
-//    Serial.print("Sideways joystick: ");
-//    Serial.println(sidewaysJoystick);
+    Serial.print("Forward joystick: ");
+    Serial.println(forwardJoystick);
+    Serial.print("Sideways joystick: ");
+    Serial.println(sidewaysJoystick);
 
     //setting the speeds
     RefSpeed speeds{};
     float k = 0.011; //used for scaling
-    //TODO need to tweak this to
+    if (abs(sidewaysJoystick) > abs(forwardJoystick)) {
+    // Sideways movement dominates
+    if (sidewaysJoystick < 0) {
+        speeds.leftSpeed = static_cast<int8_t>(clamp(k * -sidewaysJoystick, -100.0f, 100.0f));
+        speeds.rightSpeed = 0;
+    } else {
+        speeds.leftSpeed = 0;
+        speeds.rightSpeed = static_cast<int8_t>(clamp(k * sidewaysJoystick, -100.0f, 100.0f));
+    }
+} else {
+    // Forward or combined movement
     speeds.leftSpeed = static_cast<int8_t>(clamp(k * (forwardJoystick - sidewaysJoystick), -100.0f, 100.0f));
     speeds.rightSpeed = static_cast<int8_t>(clamp(k * (forwardJoystick + sidewaysJoystick), -100.0f, 100.0f));
-    //TODO maybe divide the sideways values by 2?
+}
     //Deadzone
     if(speeds.leftSpeed < deadzoneParam && speeds.leftSpeed > -deadzoneParam && speeds.rightSpeed < deadzoneParam && speeds.rightSpeed > -deadzoneParam){
         speeds.leftSpeed = 0;

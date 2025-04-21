@@ -22,18 +22,16 @@ void setup(void) {
     Serial.println("Starting joystick demo...");
     //imuInit(icm, ICM20948_ACCEL_RANGE_2_G, ICM20948_GYRO_RANGE_250_DPS, AK09916_MAG_DATARATE_10_HZ);
 
-    //adcInit(adc, 0x48); //default address
+    adcInit(adc, 0x48); //default address
 
 }
 
 void loop() {
-    // RefSpeed joystickValues = joystickToSpeed(adc);
-    //
-    // Serial.println("Right Speed: " + String(joystickValues.rightSpeed));
-    // Serial.println("Left Speed: " + String(joystickValues.leftSpeed));
-    // delay(100);
+     RefSpeed joystickValues = joystickToSpeed(adc);
 
-    Serial.println("Test print");
+     Serial.println("Right Speed: " + String(joystickValues.rightSpeed));
+     Serial.println("Left Speed: " + String(joystickValues.leftSpeed));
+     delay(100);
 
     // IMUData imuData{};
     // //printImuData(icm);
