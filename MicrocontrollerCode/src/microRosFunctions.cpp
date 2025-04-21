@@ -216,8 +216,7 @@ void checkConnection() {
 //}
 
 #ifdef ROS
-void transmitMsg(RefSpeed omegaRef, USData ultrasonicData, PIRSensors pirSensors, FanSpeeds fanSpeeds,
-                 IMUData imuData) {
+void transmitMsg(RefSpeed omegaRef, USData ultrasonicData, PIRSensors pirSensors, FanSpeeds fanSpeeds, IMUData imuData) {
     sensorMsg.left_speed = omegaRef.leftSpeed;
     sensorMsg.right_speed = omegaRef.rightSpeed;
     sensorMsg.ultrasonic_front_0 = ultrasonicData.us_front_0;

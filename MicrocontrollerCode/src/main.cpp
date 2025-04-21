@@ -33,7 +33,7 @@ void setup() {
     }
 
     delay(2000);
-
+    Serial.println("Hello microcontroller");
     #ifdef ROS
 
     const char* nodeName = "sensors_node";
@@ -129,65 +129,65 @@ void loop() {
 
     #elif DEBUG
 
-    // Serial.print("Joystick Time: ");
-    // Serial.println(joystickTime);
-    // Serial.print("Ultrasonic Time: ");
-    // Serial.println(ultrasonicTime);
-    // Serial.print("PIR Time: ");
-    // Serial.println(pirTime);
-    // Serial.print("Fingerprint Time: ");
-    // Serial.println(fingerprintTime);
-    // Serial.print("IMU Time: ");
-    // Serial.println(imuTime);
-    // Serial.print("Fan Time: ");
-    // Serial.println(fanTime);
+//     Serial.print("Joystick Time: ");
+//     Serial.println(joystickTime);
+//     Serial.print("Ultrasonic Time: ");
+//     Serial.println(ultrasonicTime);
+//     Serial.print("PIR Time: ");
+//     Serial.println(pirTime);
+//     Serial.print("Fingerprint Time: ");
+//     Serial.println(fingerprintTime);
+//     Serial.print("IMU Time: ");
+//     Serial.println(imuTime);
+//     Serial.print("Fan Time: ");
+//     Serial.println(fanTime);
 
-    // Serial.print("Fan0 Speed: ");
-    // Serial.println(fanSpeeds.fan_speed_0);
-    // Serial.print("Fan1 Speed: ");
-    // Serial.println(fanSpeeds.fan_speed_1);
-    // Serial.print("Fan2 Speed: ");
-    // Serial.println(fanSpeeds.fan_speed_2);
-    // Serial.print("Fan3 Speed: ");
-    // Serial.println(fanSpeeds.fan_speed_3);
-    // Serial.print("Right Speed: ");
-    // Serial.println(omegaRef.rightSpeed);
-    // Serial.print("Left Speed: ");
-    // Serial.println(omegaRef.leftSpeed);
-    // //Serial.print("Ultrasonic Distance: ");
-    // //Serial.println(usDistance);
-    // Serial.print("PIR 0 struct: ");
-    // Serial.println(pirSensors.pir0);
-    // Serial.print("PIR 1: ");
-    // Serial.println(pirSensors.pir1);
-    // Serial.print("PIR 2: ");
-    // Serial.println(pirSensors.pir2);
-    // Serial.print("PIR 3: ");
-    // Serial.println(pirSensors.pir3);
-    // Serial.print("Fingerprint ID: ");
-    // Serial.println(fingerID);
-    //
-    //
-    // Serial.print("Accel X: ");
-    // Serial.print(imuData.accel_x);
-    // Serial.print(" \tY: ");
-    // Serial.print(imuData.accel_y);
-    // Serial.print(" \tZ: ");
-    // Serial.println(imuData.accel_z);
-    //
-    // Serial.print("Gyro X: ");
-    // Serial.print(imuData.gyro_x);
-    // Serial.print(" \tY: ");
-    // Serial.print(imuData.gyro_y);
-    // Serial.print(" \tZ: ");
-    // Serial.println(imuData.gyro_z);
-    //
-    // Serial.print("Mag X: ");
-    // Serial.print(imuData.mag_x);
-    // Serial.print(" \tY: ");
-    // Serial.print(imuData.mag_y);
-    // Serial.print(" \tZ: ");
-    // Serial.println(imuData.mag_z);
+     Serial.print("Fan0 Speed: ");
+     Serial.println(fanSpeeds.fan_speed_0);
+     Serial.print("Fan1 Speed: ");
+     Serial.println(fanSpeeds.fan_speed_1);
+     Serial.print("Fan2 Speed: ");
+     Serial.println(fanSpeeds.fan_speed_2);
+     Serial.print("Fan3 Speed: ");
+     Serial.println(fanSpeeds.fan_speed_3);
+     Serial.print("Right Speed: ");
+     Serial.println(omegaRef.rightSpeed);
+     Serial.print("Left Speed: ");
+     Serial.println(omegaRef.leftSpeed);
+     //Serial.print("Ultrasonic Distance: ");
+     //Serial.println(usDistance);
+//     Serial.print("PIR 0 struct: ");
+//     Serial.println(pirSensors.pir0);
+//     Serial.print("PIR 1: ");
+//     Serial.println(pirSensors.pir1);
+//     Serial.print("PIR 2: ");
+//     Serial.println(pirSensors.pir2);
+//     Serial.print("PIR 3: ");
+//     Serial.println(pirSensors.pir3);
+//     Serial.print("Fingerprint ID: ");
+//     Serial.println(fingerID);
+
+
+     Serial.print("Accel X: ");
+     Serial.print(imuData.accel_x);
+     Serial.print(" \tY: ");
+     Serial.print(imuData.accel_y);
+     Serial.print(" \tZ: ");
+     Serial.println(imuData.accel_z);
+
+     Serial.print("Gyro X: ");
+     Serial.print(imuData.gyro_x);
+     Serial.print(" \tY: ");
+     Serial.print(imuData.gyro_y);
+     Serial.print(" \tZ: ");
+     Serial.println(imuData.gyro_z);
+
+     Serial.print("Mag X: ");
+     Serial.print(imuData.mag_x);
+     Serial.print(" \tY: ");
+     Serial.print(imuData.mag_y);
+     Serial.print(" \tZ: ");
+     Serial.println(imuData.mag_z);
     #endif
 
 }

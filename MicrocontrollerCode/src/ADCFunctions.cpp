@@ -16,7 +16,7 @@
 
     //Initialize ADC
     while(!adc.begin(i2c_addr)){ // Initialize ads1115 at address 0x49
-        Serial.println("Failed to find ADS1115 chip");
+        Serial.println("Failed to find ADS1115 chip at address " + String(i2c_addr, HEX));
         while (1) { //TODO might want to change this
             delay(10);
         }
