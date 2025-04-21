@@ -32,7 +32,22 @@ void setup() {
         delay(10); //wait for serial
     }
 
-    delay(5000);
+    delay(2000);
+
+    #ifdef ROS
+
+    const char* nodeName = "sensors_node";
+    const char* sensorTopicName = "sensors";
+    const char* fingerprintTopicName = "fingerprint";
+
+    microRosSetup(1, nodeName, sensorTopicName, fingerprintTopicName);
+
+    #elif ROS_DEBUG
+
+    const char* nodeName = "sensors_node";
+    const char* topicName = "refSpeed";
+    while(!microRosSetup(1, nodeName, topicName));
+    #endif
 
     FanDutyCycles startDutyCycles{};
     startDutyCycles.fan_0_duty_cycle = 0;
@@ -49,31 +64,13 @@ void setup() {
     setupLight();
     setupLidar();
 
-    #ifdef ROS
-
-    const char* nodeName = "sensors_node";
-    const char* sensorTopicName = "sensors";
-    const char* fingerprintTopicName = "fingerprint";
-
-    while(!microRosSetup(1, nodeName, sensorTopicName, fingerprintTopicName));
-
-    #elif ROS_DEBUG
-
-    const char* nodeName = "sensors_node";
-    const char* topicName = "refSpeed";
-    while(!microRosSetup(1, nodeName, topicName));
-    #endif
-
-    while (!Serial) {
-        delay(10);
-    }
 
 
 }
 
 unsigned long lastFingerprintTime = 0;
 
-unsigned long lastMicroRosTime = 0;
+//unsigned long lastMicroRosTime = 0;
 
 void loop() {
 
@@ -102,18 +99,18 @@ void loop() {
     }
 
 
-#if defined(ROS) || defined(ROS_DEBUG)
-    if(currentMillis - lastMicroRosTime >= 25000){
-        lastMicroRosTime = currentMillis;
-        // checking the MicroROS connection to make sure that it is still connected
-//        if (!rmw_uros_ping_agent(100, 10)) {
-//            Serial.println("Lost agent connection. Rebooting...");
-//            //watchdog_enable(1, 1); // 2000 ms (2 seconds) timeout
-//            //while(true);
-//        }
-        //checkConnection();
-    }
-#endif
+//#if defined(ROS) || defined(ROS_DEBUG)
+//    if(currentMillis - lastMicroRosTime >= 25000){
+//        lastMicroRosTime = currentMillis;
+//        // checking the MicroROS connection to make sure that it is still connected
+////        if (!rmw_uros_ping_agent(100, 10)) {
+////            Serial.println("Lost agent connection. Rebooting...");
+////            //watchdog_enable(1, 1); // 2000 ms (2 seconds) timeout
+////            //while(true);
+////        }
+//        //checkConnection();
+//    }
+//#endif
 
 
 

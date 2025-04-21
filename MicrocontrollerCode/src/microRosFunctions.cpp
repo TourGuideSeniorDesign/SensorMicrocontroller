@@ -155,7 +155,7 @@ RCCHECK(rclc_publisher_init_best_effort(
 
     // create executor
     //Number of handles = # timers + # subscriptions + # clients + # services
-    RCCHECK(rclc_executor_init(&executor, &support.context, 4, &allocator));
+    RCCHECK(rclc_executor_init(&executor, &support.context, 5, &allocator));
     RCCHECK(
         rclc_executor_add_subscription(&executor, &fanSubscriber, &fanMsg, &fan_subscription_callback, ON_NEW_DATA));
     RCCHECK(
@@ -186,34 +186,34 @@ void checkConnection() {
 
 }
 
-void reconnectAgent() {
-        rmw_context_t * rmw_context = rcl_context_get_rmw_context(&support.context);
-  (void) rmw_uros_set_context_entity_destroy_session_timeout(rmw_context, 0);
-
-    // Clean up old resources
-    RCCHECK(rcl_publisher_fini(&sensorPublisher, &node));
-    RCCHECK(rcl_publisher_fini(&fingerprintPublisher, &node));
-    RCCHECK(rcl_subscription_fini(&fanSubscriber, &node));
-    RCCHECK(rcl_subscription_fini(&lightSubscriber, &node));
-    RCCHECK(rcl_subscription_fini(&lidarSubscriber, &node));
-    RCCHECK(rcl_timer_fini(&timer));
-    RCCHECK(rcl_node_fini(&node));
-    RCCHECK(rclc_executor_fini(&executor));
-    RCCHECK(rclc_support_fini(&support));
-
-
-    const char* nodeName = "sensors_node";
-    const char* sensorTopicName = "sensors";
-    const char* fingerprintTopicName = "fingerprint";
-
-    // Attempt to reinitialize
-    if (microRosSetup(1, nodeName, sensorTopicName, fingerprintTopicName)) {
-        agent_connected = true;
-        Serial.println("Reconnected to Micro-ROS agent.");
-    } else {
-        Serial.println("Reconnection failed.");
-    }
-}
+//void reconnectAgent() {
+//        rmw_context_t * rmw_context = rcl_context_get_rmw_context(&support.context);
+//  (void) rmw_uros_set_context_entity_destroy_session_timeout(rmw_context, 0);
+//
+//    // Clean up old resources
+//    RCCHECK(rcl_publisher_fini(&sensorPublisher, &node));
+//    RCCHECK(rcl_publisher_fini(&fingerprintPublisher, &node));
+//    RCCHECK(rcl_subscription_fini(&fanSubscriber, &node));
+//    RCCHECK(rcl_subscription_fini(&lightSubscriber, &node));
+//    RCCHECK(rcl_subscription_fini(&lidarSubscriber, &node));
+//    RCCHECK(rcl_timer_fini(&timer));
+//    RCCHECK(rcl_node_fini(&node));
+//    RCCHECK(rclc_executor_fini(&executor));
+//    RCCHECK(rclc_support_fini(&support));
+//
+//
+//    const char* nodeName = "sensors_node";
+//    const char* sensorTopicName = "sensors";
+//    const char* fingerprintTopicName = "fingerprint";
+//
+//    // Attempt to reinitialize
+//    if (microRosSetup(1, nodeName, sensorTopicName, fingerprintTopicName)) {
+//        agent_connected = true;
+//        Serial.println("Reconnected to Micro-ROS agent.");
+//    } else {
+//        Serial.println("Reconnection failed.");
+//    }
+//}
 
 #ifdef ROS
 void transmitMsg(RefSpeed omegaRef, USData ultrasonicData, PIRSensors pirSensors, FanSpeeds fanSpeeds,
