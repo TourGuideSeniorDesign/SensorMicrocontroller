@@ -23,7 +23,7 @@
         }
     }
     Serial.println("ADS1115 Found!");
-
+    adc.setGain(GAIN_ONE); //Setting the gain to +/- 4.096V  1 bit = 2mV for more precise readings
 }
 
 
