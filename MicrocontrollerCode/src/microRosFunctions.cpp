@@ -185,6 +185,9 @@ void destroy_entities(){
     RCCHECK(rcl_publisher_fini(&sensorPublisher, &node));
     RCCHECK(rcl_publisher_fini(&fingerprintPublisher, &node));
     RCCHECK(rcl_timer_fini(&timer));
+    RCCHECK(rclc_executor_fini(&executor));
+    RCCHECK(rcl_node_fini(&node));
+    RCCHECK(rclc_support_fini(&support));
 }
 
 void microRosTick(){
