@@ -36,11 +36,14 @@ void setup() {
     Serial.println("Hello microcontroller");
     #ifdef ROS
 
-    const char* nodeName = "sensors_node";
-    const char* sensorTopicName = "sensors";
-    const char* fingerprintTopicName = "fingerprint";
+    set_microros_serial_transports(Serial);
+    delay(2000);
 
-    microRosSetup(1, nodeName, sensorTopicName, fingerprintTopicName);
+//    const char* nodeName = "sensors_node";
+//    const char* sensorTopicName = "sensors";
+//    const char* fingerprintTopicName = "fingerprint";
+
+    //microRosSetup(1, nodeName, sensorTopicName, fingerprintTopicName);
 
     #elif ROS_DEBUG
 
@@ -56,9 +59,9 @@ void setup() {
     startDutyCycles.fan_3_duty_cycle = 0;
 
     adcInit(ultrasonicAdc, 0x49); //default address
-    adcInit(joystickAdc, 0x48); //default address
-    imuInit(icm, ICM20948_ACCEL_RANGE_2_G, ICM20948_GYRO_RANGE_250_DPS, AK09916_MAG_DATARATE_10_HZ);
-    setupFingerprint();
+    //adcInit(joystickAdc, 0x48); //default address
+    //imuInit(icm, ICM20948_ACCEL_RANGE_2_G, ICM20948_GYRO_RANGE_250_DPS, AK09916_MAG_DATARATE_10_HZ);
+    //setupFingerprint();
     setAllFans(startDutyCycles);
     setupRPMCounter();
     setupLight();
@@ -78,15 +81,15 @@ void loop() {
 
     //TODO might want to figure out how to put these on core1 so that they can run in parallel
     //uint32_t start = millis();
-    RefSpeed omegaRef = joystickToSpeed(joystickAdc);
+    //RefSpeed omegaRef = joystickToSpeed(joystickAdc);
     //uint32_t joystickTime = millis() - start;
-    USData usDistances = allUltrasonicDistance(joystickAdc, ultrasonicAdc);
+    //USData usDistances = allUltrasonicDistance(joystickAdc, ultrasonicAdc);
     //uint32_t ultrasonicTime = millis() - start - joystickTime;
     PIRSensors pirSensors = readAllPIR();
     //uint32_t pirTime = millis() - start - joystickTime - ultrasonicTime;
     //uint8_t fingerID = getFingerprintID(); //TODO might want to put this on a timer so that it runs less frequently
     //uint32_t fingerprintTime = millis() - start - joystickTime - ultrasonicTime - pirTime;
-    IMUData imuData = getIMUData(icm);
+    //IMUData imuData = getIMUData(icm);
     //uint32_t imuTime = millis() - start - joystickTime - ultrasonicTime - pirTime - fingerprintTime;
     FanSpeeds fanSpeeds = getAllFanSpeeds(); //TODO might want to put on a timer as well
     //uint32_t fanTime = millis() - start - joystickTime - ultrasonicTime - pirTime - fingerprintTime - imuTime;
@@ -94,7 +97,7 @@ void loop() {
     uint8_t fingerID = 2;
     if (currentMillis - lastFingerprintTime >= 5000) {
         lastFingerprintTime = currentMillis;
-        fingerID = getFingerprintID();
+        //fingerID = getFingerprintID();
         //Serial.println("Fingerprint ID: " + String(fingerID));
     }
 
@@ -116,7 +119,9 @@ void loop() {
 
     #ifdef ROS
 
-    transmitMsg(omegaRef, usDistances, pirSensors, fanSpeeds, imuData);
+    microRosTick();
+
+    //transmitMsg(omegaRef, usDistances, pirSensors, fanSpeeds, imuData);
 
     if(fingerID != 2){
         publishFingerprint(fingerID);

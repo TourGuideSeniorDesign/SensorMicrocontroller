@@ -52,6 +52,19 @@ rcl_timer_t timer;
 
 boolean agent_connected = false;
 
+enum states {
+  WAITING_AGENT,
+  AGENT_AVAILABLE,
+  AGENT_CONNECTED,
+  AGENT_DISCONNECTED
+} state;
+
+#define EXECUTE_EVERY_N_MS(MS, X)  do { \
+  static volatile int64_t init = -1; \
+  if (init == -1) { init = uxr_millis();} \
+  if (uxr_millis() - init > MS) { X; init = uxr_millis();} \
+} while (0)\
+
 #define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){error_loop();}}
 #define RCSOFTCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){}}
 
@@ -66,10 +79,139 @@ void timer_callback(rcl_timer_t *inputTimer, int64_t last_call_time) {
     RCLC_UNUSED(last_call_time);
     if (inputTimer != NULL) {
 #ifdef ROS
-        RCSOFTCHECK(rcl_publish(&sensorPublisher, &sensorMsg, NULL));
+        rcl_publish(&sensorPublisher, &sensorMsg, NULL);
 #elif ROS_DEBUG
         RCSOFTCHECK(rcl_publish(&sensorPublisher, &msg, NULL));
 #endif
+    }
+}
+
+bool create_entities(){
+    allocator = rcl_get_default_allocator();
+
+    // create init_options
+  RCCHECK(rclc_support_init(&support, 0, NULL, &allocator));
+
+  // create node
+  RCCHECK(rclc_node_init_default(&node, "sensors_node", "", &support));
+
+  #ifdef ROS
+    // create publisher
+    RCCHECK(rclc_publisher_init_best_effort(
+        &sensorPublisher,
+        &node,
+        ROSIDL_GET_MSG_TYPE_SUPPORT(wheelchair_sensor_msgs, msg, Sensors),
+        "sensors"));
+    // Create fingerprint publisher
+    RCCHECK(rclc_publisher_init_default(
+        &fingerprintPublisher,
+        &node,
+        ROSIDL_GET_MSG_TYPE_SUPPORT(wheelchair_sensor_msgs, msg, Fingerprint),
+        "fingerprint"));
+
+    // create timer,
+    //unsigned int timer_timeout = 1;
+    RCCHECK(rclc_timer_init_default(
+        &timer,
+        &support,
+        RCL_MS_TO_NS(10),
+        timer_callback));
+
+#elif ROS_DEBUG
+    // create publisher
+RCCHECK(rclc_publisher_init_best_effort(
+        &sensorPublisher,
+        &node,
+        ROSIDL_GET_MSG_TYPE_SUPPORT(wheelchair_sensor_msgs, msg, RefSpeed),
+        topicName));
+#endif
+
+    //Create subscriber
+    RCCHECK(rclc_subscription_init_default(
+        &fanSubscriber,
+        &node,
+        ROSIDL_GET_MSG_TYPE_SUPPORT(wheelchair_sensor_msgs, msg, FanSpeed),
+        "fan_duty_cycles"));
+
+    //Create subscriber
+    RCCHECK(rclc_subscription_init_default(
+        &lightSubscriber,
+        &node,
+        ROSIDL_GET_MSG_TYPE_SUPPORT(wheelchair_sensor_msgs, msg, Light),
+        "light"));
+
+    //Create subscriber
+    RCCHECK(rclc_subscription_init_default(
+        &lidarSubscriber,
+        &node,
+        ROSIDL_GET_MSG_TYPE_SUPPORT(wheelchair_sensor_msgs, msg, Lidar),
+        "lidar"));
+
+    // create executor
+    //Number of handles = # timers + # subscriptions + # clients + # services
+    executor = rclc_executor_get_zero_initialized_executor();
+    RCCHECK(rclc_executor_init(&executor, &support.context, 5, &allocator));
+    RCCHECK(
+        rclc_executor_add_subscription(&executor, &fanSubscriber, &fanMsg, &fan_subscription_callback, ON_NEW_DATA));
+    RCCHECK(
+        rclc_executor_add_subscription(&executor, &lightSubscriber, &lightMsg, &light_subscription_callback, ON_NEW_DATA
+        ));
+    RCCHECK(
+        rclc_executor_add_subscription(&executor, &lidarSubscriber, &lidarMsg, &lidar_subscription_callback, ON_NEW_DATA
+        ));
+    RCCHECK(rclc_executor_add_timer(&executor, &timer));
+
+    #ifdef ROS
+    sensorMsg.left_speed = 0;
+    sensorMsg.right_speed = 0;
+#elif ROS_DEBUG
+    msg.left_speed = 0;
+    msg.right_speed = 0;
+#endif
+
+    state = WAITING_AGENT;
+
+    return true;
+
+}
+
+void destroy_entities(){
+    rmw_context_t * rmw_context = rcl_context_get_rmw_context(&support.context);
+  (void) rmw_uros_set_context_entity_destroy_session_timeout(rmw_context, 0);
+
+    RCCHECK(rcl_subscription_fini(&fanSubscriber, &node));
+    RCCHECK(rcl_subscription_fini(&lidarSubscriber, &node));
+    RCCHECK(rcl_subscription_fini(&lightSubscriber, &node));
+    RCCHECK(rcl_publisher_fini(&sensorPublisher, &node));
+    RCCHECK(rcl_publisher_fini(&fingerprintPublisher, &node));
+    RCCHECK(rcl_timer_fini(&timer));
+}
+
+void microRosTick(){
+    switch (state) {
+        case WAITING_AGENT:
+            EXECUTE_EVERY_N_MS(500,
+                               state = (RMW_RET_OK == rmw_uros_ping_agent(100, 1)) ? AGENT_AVAILABLE : WAITING_AGENT;);
+            break;
+        case AGENT_AVAILABLE:
+            state = (true == create_entities()) ? AGENT_CONNECTED : WAITING_AGENT;
+            if (state == WAITING_AGENT) {
+                destroy_entities();
+            };
+            break;
+        case AGENT_CONNECTED:
+            EXECUTE_EVERY_N_MS(200, state = (RMW_RET_OK == rmw_uros_ping_agent(100, 1)) ? AGENT_CONNECTED
+                                                                                        : AGENT_DISCONNECTED;);
+            if (state == AGENT_CONNECTED) {
+                rclc_executor_spin_some(&executor, RCL_MS_TO_NS(100));
+            }
+            break;
+        case AGENT_DISCONNECTED:
+            destroy_entities();
+            state = WAITING_AGENT;
+            break;
+        default:
+            break;
     }
 }
 
@@ -177,14 +319,14 @@ RCCHECK(rclc_publisher_init_best_effort(
     return true;
 }
 
-void checkConnection() {
-    // Try spinning and check if connection is alive
-//    if(rmw_uros_ping_agent(500, 10) != RMW_RET_OK){
-//        watchdog_enable(1, 1); // 1 ms timeout
-//        while (1);
-//    }
-
-}
+//void checkConnection() {
+//    // Try spinning and check if connection is alive
+////    if(rmw_uros_ping_agent(500, 10) != RMW_RET_OK){
+////        watchdog_enable(1, 1); // 1 ms timeout
+////        while (1);
+////    }
+//
+//}
 
 //void reconnectAgent() {
 //        rmw_context_t * rmw_context = rcl_context_get_rmw_context(&support.context);
