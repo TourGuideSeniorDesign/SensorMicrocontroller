@@ -104,7 +104,7 @@ void loop() {
 
     microRosTick();
 
-    //transmitMsg(omegaRef, usDistances, pirSensors, fanSpeeds, imuData);
+    transmitMsg(omegaRef, usDistances, pirSensors, fanSpeeds, imuData);
 
     if(fingerID != 2){
         publishFingerprint(fingerID);
