@@ -22,6 +22,12 @@
  */
 boolean microRosSetup(unsigned int timerValue, const char* nodeName, const char* sensorTopicName, const char* fingerprintTopicName);
 
+bool create_entities();
+
+void destroy_entities();
+
+void microRosTick();
+
 void transmitMsg(RefSpeed omegaRef, USData ultrasonicData, PIRSensors pirSensors, FanSpeeds fanSpeeds, IMUData imuData);
 
 void publishFingerprint(uint8_t fingerprintID);

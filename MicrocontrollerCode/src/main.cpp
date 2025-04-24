@@ -36,11 +36,14 @@ void setup() {
     Serial.println("Hello microcontroller");
     #ifdef ROS
 
-    const char* nodeName = "sensors_node";
-    const char* sensorTopicName = "sensors";
-    const char* fingerprintTopicName = "fingerprint";
+    set_microros_serial_transports(Serial);
+    delay(2000);
 
-    microRosSetup(1, nodeName, sensorTopicName, fingerprintTopicName);
+//    const char* nodeName = "sensors_node";
+//    const char* sensorTopicName = "sensors";
+//    const char* fingerprintTopicName = "fingerprint";
+
+    //microRosSetup(1, nodeName, sensorTopicName, fingerprintTopicName);
 
     #elif ROS_DEBUG
 
@@ -63,8 +66,6 @@ void setup() {
     setupRPMCounter();
     setupLight();
     setupLidar();
-
-
 
 }
 
@@ -99,24 +100,11 @@ void loop() {
     }
 
 
-//#if defined(ROS) || defined(ROS_DEBUG)
-//    if(currentMillis - lastMicroRosTime >= 25000){
-//        lastMicroRosTime = currentMillis;
-//        // checking the MicroROS connection to make sure that it is still connected
-////        if (!rmw_uros_ping_agent(100, 10)) {
-////            Serial.println("Lost agent connection. Rebooting...");
-////            //watchdog_enable(1, 1); // 2000 ms (2 seconds) timeout
-////            //while(true);
-////        }
-//        //checkConnection();
-//    }
-//#endif
-
-
-
     #ifdef ROS
 
-    transmitMsg(omegaRef, usDistances, pirSensors, fanSpeeds, imuData);
+    microRosTick();
+
+    //transmitMsg(omegaRef, usDistances, pirSensors, fanSpeeds, imuData);
 
     if(fingerID != 2){
         publishFingerprint(fingerID);
