@@ -12,17 +12,20 @@
  * @param adc - An instance of the Adafruit_ADS1115 class for the ADC
  * @param i2c_addr - The I2C address of the ADC in hex
  */
- void adcInit(Adafruit_ADS1115 &adc, uint8_t i2c_addr){
+ bool adcInit(Adafruit_ADS1115 &adc, uint8_t i2c_addr){
+    int adc_count = 0;
 
     //Initialize ADC
     while(!adc.begin(i2c_addr)){ // Initialize ads1115 at address 0x49
         Serial.println("Failed to find ADS1115 chip at address " + String(i2c_addr, HEX));
-        while (1) { //TODO might want to change this
-            delay(10);
+        if (adc_count > 10) {
+            return false;
         }
+        adc_count++;
     }
     Serial.println("ADS1115 Found!");
     adc.setGain(GAIN_ONE); //Setting the gain to +/- 4.096V  1 bit = 2mV for more precise readings
+     return true;
 }
 
 

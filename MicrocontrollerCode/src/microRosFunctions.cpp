@@ -21,6 +21,7 @@
 #include <wheelchair_sensor_msgs/msg/fan_speed.h>
 #include <wheelchair_sensor_msgs/msg/light.h>
 #include <wheelchair_sensor_msgs/msg/lidar.h>
+#include <wheelchair_sensor_msgs/msg/sensor_error.h>
 
 
 #ifdef ROS_DEBUG
@@ -30,6 +31,7 @@
 
 rcl_publisher_t sensorPublisher;
 rcl_publisher_t fingerprintPublisher;
+rcl_publisher_t errorPublisher;
 
 rcl_subscription_t fanSubscriber;
 rcl_subscription_t lightSubscriber;
@@ -108,6 +110,13 @@ bool create_entities(){
         &node,
         ROSIDL_GET_MSG_TYPE_SUPPORT(wheelchair_sensor_msgs, msg, Fingerprint),
         "fingerprint"));
+
+    //Create error publisher
+    RCCHECK(rclc_publisher_init_default(
+        &errorPublisher,
+        &node,
+        ROSIDL_GET_MSG_TYPE_SUPPORT(wheelchair_sensor_msgs, msg, SensorError),
+        "sensor_error"));
 
     // create timer,
     //unsigned int timer_timeout = 1;
@@ -322,43 +331,46 @@ RCCHECK(rclc_publisher_init_best_effort(
     return true;
 }
 
-//void checkConnection() {
-//    // Try spinning and check if connection is alive
-////    if(rmw_uros_ping_agent(500, 10) != RMW_RET_OK){
-////        watchdog_enable(1, 1); // 1 ms timeout
-////        while (1);
-////    }
-//
-//}
 
-//void reconnectAgent() {
-//        rmw_context_t * rmw_context = rcl_context_get_rmw_context(&support.context);
-//  (void) rmw_uros_set_context_entity_destroy_session_timeout(rmw_context, 0);
-//
-//    // Clean up old resources
-//    RCCHECK(rcl_publisher_fini(&sensorPublisher, &node));
-//    RCCHECK(rcl_publisher_fini(&fingerprintPublisher, &node));
-//    RCCHECK(rcl_subscription_fini(&fanSubscriber, &node));
-//    RCCHECK(rcl_subscription_fini(&lightSubscriber, &node));
-//    RCCHECK(rcl_subscription_fini(&lidarSubscriber, &node));
-//    RCCHECK(rcl_timer_fini(&timer));
-//    RCCHECK(rcl_node_fini(&node));
-//    RCCHECK(rclc_executor_fini(&executor));
-//    RCCHECK(rclc_support_fini(&support));
-//
-//
-//    const char* nodeName = "sensors_node";
-//    const char* sensorTopicName = "sensors";
-//    const char* fingerprintTopicName = "fingerprint";
-//
-//    // Attempt to reinitialize
-//    if (microRosSetup(1, nodeName, sensorTopicName, fingerprintTopicName)) {
-//        agent_connected = true;
-//        Serial.println("Reconnected to Micro-ROS agent.");
-//    } else {
-//        Serial.println("Reconnection failed.");
-//    }
-//}
+void publishFingerprint(uint8_t fingerprintID) {
+        wheelchair_sensor_msgs__msg__Fingerprint fingerprintMsg;
+        fingerprintMsg.user_id = fingerprintID;
+        RCSOFTCHECK(rcl_publish(&fingerprintPublisher, &fingerprintMsg, NULL));
+    }
+
+void publishError(const bool joystick_adc_error, const bool ultrasonic_adc_error, const bool fingerprint_error, const bool imu_error) {
+        wheelchair_sensor_msgs__msg__SensorError sensorErrorMsg;
+        sensorErrorMsg.joystick_adc_error = joystick_adc_error;
+        sensorErrorMsg.ultrasonic_adc_error = ultrasonic_adc_error;
+        sensorErrorMsg.fingerprint_error = fingerprint_error;
+        sensorErrorMsg.imu_error = imu_error;
+        RCSOFTCHECK(rcl_publish(&errorPublisher, &sensorErrorMsg, NULL));
+    }
+
+static void fan_subscription_callback(const void *msgin) {
+        const auto *msg = (const wheelchair_sensor_msgs__msg__FanSpeed *) msgin;
+        FanDutyCycles duty_cycles{};
+        duty_cycles.fan_0_duty_cycle = msg->fan_percent_0;
+        duty_cycles.fan_1_duty_cycle = msg->fan_percent_1;
+        duty_cycles.fan_2_duty_cycle = msg->fan_percent_2;
+        duty_cycles.fan_3_duty_cycle = msg->fan_percent_3;
+        setAllFans(duty_cycles);
+    }
+
+static void light_subscription_callback(const void *msgin) {
+        const auto *msg = (const wheelchair_sensor_msgs__msg__Light *) msgin;
+        const int lightState = msg->state;
+        setLight(lightState);
+    }
+
+static void lidar_subscription_callback(const void *msgin){
+        const auto *msg = (const wheelchair_sensor_msgs__msg__Lidar *) msgin;
+        if(msg->state == 0){
+            lidarState(false);
+        } else if(msg->state == 1){
+            lidarState(true);
+        }
+    }
 
 #ifdef ROS
 void transmitMsg(RefSpeed omegaRef, USData ultrasonicData, PIRSensors pirSensors, FanSpeeds fanSpeeds, IMUData imuData) {
@@ -390,37 +402,7 @@ void transmitMsg(RefSpeed omegaRef, USData ultrasonicData, PIRSensors pirSensors
     RCSOFTCHECK(rclc_executor_spin_some(&executor, RCL_MS_TO_NS(10)));
 }
 
-void publishFingerprint(uint8_t fingerprintID) {
-    wheelchair_sensor_msgs__msg__Fingerprint fingerprintMsg;
-    fingerprintMsg.user_id = fingerprintID;
-    RCSOFTCHECK(rcl_publish(&fingerprintPublisher, &fingerprintMsg, NULL));
-}
 
-
-static void fan_subscription_callback(const void *msgin) {
-    const auto *msg = (const wheelchair_sensor_msgs__msg__FanSpeed *) msgin;
-    FanDutyCycles duty_cycles{};
-    duty_cycles.fan_0_duty_cycle = msg->fan_percent_0;
-    duty_cycles.fan_1_duty_cycle = msg->fan_percent_1;
-    duty_cycles.fan_2_duty_cycle = msg->fan_percent_2;
-    duty_cycles.fan_3_duty_cycle = msg->fan_percent_3;
-    setAllFans(duty_cycles);
-}
-
-static void light_subscription_callback(const void *msgin) {
-    const auto *msg = (const wheelchair_sensor_msgs__msg__Light *) msgin;
-    const int lightState = msg->state;
-    setLight(lightState);
-}
-
-static void lidar_subscription_callback(const void *msgin){
-        const auto *msg = (const wheelchair_sensor_msgs__msg__Lidar *) msgin;
-        if(msg->state == 0){
-            lidarState(false);
-        } else if(msg->state == 1){
-            lidarState(true);
-        }
-    }
 
 #elif ROS_DEBUG
 

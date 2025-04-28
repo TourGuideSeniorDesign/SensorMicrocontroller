@@ -23,7 +23,11 @@ Adafruit_ADS1115 ultrasonicAdc;// Construct an ads1115
 Adafruit_ICM20948 icm;
 
 
-
+bool joystick_adc_error = false;
+bool ultrasonic_adc_error = false;
+bool fingerprint_error = false;
+bool imu_error = false;
+int error_timer = 5000;
 
 void setup() {
     Serial.begin(115200);
@@ -58,18 +62,25 @@ void setup() {
     startDutyCycles.fan_2_duty_cycle = 0;
     startDutyCycles.fan_3_duty_cycle = 0;
 
-    adcInit(ultrasonicAdc, 0x49); //default address
-    adcInit(joystickAdc, 0x48); //default address
-    imuInit(icm, ICM20948_ACCEL_RANGE_2_G, ICM20948_GYRO_RANGE_250_DPS, AK09916_MAG_DATARATE_10_HZ);
-    setupFingerprint();
+    ultrasonic_adc_error = adcInit(ultrasonicAdc, 0x49); //default address
+    joystick_adc_error =  adcInit(joystickAdc, 0x48); //default address
+    imu_error = imuInit(icm, ICM20948_ACCEL_RANGE_2_G, ICM20948_GYRO_RANGE_250_DPS, AK09916_MAG_DATARATE_10_HZ);
+    fingerprint_error = setupFingerprint();
     setAllFans(startDutyCycles);
     setupRPMCounter();
     setupLight();
     setupLidar();
+#ifdef ROS
+    if (!joystick_adc_error || !ultrasonic_adc_error || !fingerprint_error || !imu_error) {
+        publishError(joystick_adc_error, ultrasonic_adc_error, fingerprint_error, imu_error);
+        error_timer = 500;
+    }
+#endif
 
 }
 
 unsigned long lastFingerprintTime = 0;
+unsigned long lastErrorTime = 0;
 
 //unsigned long lastMicroRosTime = 0;
 
@@ -100,11 +111,17 @@ void loop() {
     }
 
 
+
     #ifdef ROS
 
     microRosTick();
 
     transmitMsg(omegaRef, usDistances, pirSensors, fanSpeeds, imuData);
+
+    if (currentMillis - lastErrorTime >= error_timer) {
+        lastErrorTime = currentMillis;
+        publishError(joystick_adc_error, ultrasonic_adc_error, fingerprint_error, imu_error);
+    }
 
     if(fingerID != 2){
         publishFingerprint(fingerID);
