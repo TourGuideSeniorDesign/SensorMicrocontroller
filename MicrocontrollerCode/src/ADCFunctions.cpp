@@ -19,13 +19,13 @@
     while(!adc.begin(i2c_addr)){ // Initialize ads1115 at address 0x49
         Serial.println("Failed to find ADS1115 chip at address " + String(i2c_addr, HEX));
         if (adc_count > 10) {
-            return false;
+            return true;
         }
         adc_count++;
     }
     Serial.println("ADS1115 Found!");
     adc.setGain(GAIN_ONE); //Setting the gain to +/- 4.096V  1 bit = 2mV for more precise readings
-     return true;
+     return false;
 }
 
 

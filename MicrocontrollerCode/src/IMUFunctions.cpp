@@ -27,7 +27,7 @@ bool imuInit(Adafruit_ICM20948 &icm, icm20948_accel_range_t accelRang, icm20948_
 
         Serial.println("Failed to find ICM20948 chip");
         if (init_count > 10) {
-            return false;
+            return true;
         }
         init_count++;
     }
@@ -110,7 +110,7 @@ bool imuInit(Adafruit_ICM20948 &icm, icm20948_accel_range_t accelRang, icm20948_
             break;
     }
     Serial.println();
-    return true;
+    return false;
 }
 
 

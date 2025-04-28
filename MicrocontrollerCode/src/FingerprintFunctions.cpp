@@ -100,8 +100,9 @@ bool setupFingerprint()
     int init_count = 0;
     Serial.println("Did not find fingerprint sensor :(");
     while (!finger.verifyPassword()) {
+      Serial.println(init_count);
       if (init_count > 10) {
-        return false;
+        return true;
       }
       init_count++;
     }
@@ -126,7 +127,7 @@ bool setupFingerprint()
     Serial.println("Waiting for valid finger...");
     Serial.print("Sensor contains "); Serial.print(finger.templateCount); Serial.println(" templates");
   }
-  return true;
+  return false;
 }
 
 void loopFingerprint()                     // run over and over again

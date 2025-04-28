@@ -66,6 +66,7 @@ void setup() {
     joystick_adc_error =  adcInit(joystickAdc, 0x48); //default address
     imu_error = imuInit(icm, ICM20948_ACCEL_RANGE_2_G, ICM20948_GYRO_RANGE_250_DPS, AK09916_MAG_DATARATE_10_HZ);
     fingerprint_error = setupFingerprint();
+    Serial.print("Fingerprint error: ");
     setAllFans(startDutyCycles);
     setupRPMCounter();
     setupLight();
@@ -77,6 +78,10 @@ void setup() {
     }
 #endif
 
+Serial.println("Joystick Error: " + String(joystick_adc_error));
+    Serial.println("Ultrasonic Error: " + String(ultrasonic_adc_error));
+    Serial.println("Fingerprint Error: " + String(fingerprint_error));
+    Serial.println("IMU Error: " + String(imu_error));
 }
 
 unsigned long lastFingerprintTime = 0;
@@ -85,20 +90,34 @@ unsigned long lastErrorTime = 0;
 //unsigned long lastMicroRosTime = 0;
 
 void loop() {
-
     unsigned long currentMillis = millis();
 
     //TODO might want to figure out how to put these on core1 so that they can run in parallel
     //uint32_t start = millis();
-    RefSpeed omegaRef = joystickToSpeed(joystickAdc);
+    RefSpeed omegaRef{};
+    if (!joystick_adc_error) {
+        omegaRef = joystickToSpeed(joystickAdc);
+    }
+
+
     //uint32_t joystickTime = millis() - start;
-    USData usDistances = allUltrasonicDistance(joystickAdc, ultrasonicAdc);
+    USData usDistances{};
+    if (!ultrasonic_adc_error && !joystick_adc_error) {
+        usDistances = allUltrasonicDistance(joystickAdc, ultrasonicAdc);
+    }
+
+
     //uint32_t ultrasonicTime = millis() - start - joystickTime;
     PIRSensors pirSensors = readAllPIR();
     //uint32_t pirTime = millis() - start - joystickTime - ultrasonicTime;
     //uint8_t fingerID = getFingerprintID(); //TODO might want to put this on a timer so that it runs less frequently
     //uint32_t fingerprintTime = millis() - start - joystickTime - ultrasonicTime - pirTime;
-    IMUData imuData = getIMUData(icm);
+    IMUData imuData{};
+    if (!imu_error) {
+        imuData = getIMUData(icm);
+    }
+
+
     //uint32_t imuTime = millis() - start - joystickTime - ultrasonicTime - pirTime - fingerprintTime;
     FanSpeeds fanSpeeds = getAllFanSpeeds(); //TODO might want to put on a timer as well
     //uint32_t fanTime = millis() - start - joystickTime - ultrasonicTime - pirTime - fingerprintTime - imuTime;
@@ -106,7 +125,10 @@ void loop() {
     uint8_t fingerID = 2;
     if (currentMillis - lastFingerprintTime >= 5000) {
         lastFingerprintTime = currentMillis;
-        fingerID = getFingerprintID();
+        if (!fingerprint_error) {
+            fingerID = getFingerprintID();
+        }
+
         //Serial.println("Fingerprint ID: " + String(fingerID));
     }
 
