@@ -1,7 +1,6 @@
 #include <Wire.h>
 #include <Adafruit_ADS1X15.h>
 #include <Adafruit_ICM20948.h>
-
 #include <hardware/watchdog.h>
 #include "ADCFunctions.h"
 #include "JoystickFunctions.h"
@@ -66,7 +65,7 @@ void setup() {
     setupRPMCounter();
     setupLight();
     setupLidar();
-
+        watchdog_enable(8000, 1);  // updating the watchdog// set the watchdog to run at 8s interval
 }
 
 unsigned long lastFingerprintTime = 0;
@@ -98,8 +97,7 @@ void loop() {
         fingerID = getFingerprintID();
         //Serial.println("Fingerprint ID: " + String(fingerID));
     }
-
-
+    watchdog_update(); //updatingthe watchdog
     #ifdef ROS
 
     microRosTick();
