@@ -26,6 +26,12 @@ Adafruit_ICM20948 icm;
 
 void setup() {
     Serial.begin(115200);
+    FanDutyCycles startDutyCycles{};
+    startDutyCycles.fan_0_duty_cycle = 0;
+    startDutyCycles.fan_1_duty_cycle = 0;
+    startDutyCycles.fan_2_duty_cycle = 0;
+    startDutyCycles.fan_3_duty_cycle = 0;
+    setAllFans(startDutyCycles);
 
     while(!Serial){
         delay(10); //wait for serial
@@ -51,17 +57,12 @@ void setup() {
     while(!microRosSetup(1, nodeName, topicName));
     #endif
 
-    FanDutyCycles startDutyCycles{};
-    startDutyCycles.fan_0_duty_cycle = 0;
-    startDutyCycles.fan_1_duty_cycle = 0;
-    startDutyCycles.fan_2_duty_cycle = 0;
-    startDutyCycles.fan_3_duty_cycle = 0;
+
 
     adcInit(ultrasonicAdc, 0x49); //default address
     adcInit(joystickAdc, 0x48); //default address
     imuInit(icm, ICM20948_ACCEL_RANGE_2_G, ICM20948_GYRO_RANGE_250_DPS, AK09916_MAG_DATARATE_10_HZ);
     setupFingerprint();
-    setAllFans(startDutyCycles);
     setupRPMCounter();
     setupLight();
     setupLidar();
@@ -97,7 +98,7 @@ void loop() {
         fingerID = getFingerprintID();
         //Serial.println("Fingerprint ID: " + String(fingerID));
     }
-    watchdog_update(); //updatingthe watchdog
+    watchdog_update(); //updating the watchdog
     #ifdef ROS
 
     microRosTick();
