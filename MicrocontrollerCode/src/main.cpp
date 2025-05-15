@@ -26,6 +26,10 @@ Adafruit_ICM20948 icm;
 
 
 void setup() {
+
+    setupLidar();
+    lidarState(true); // Enabling the LiDAR at start so it can grab the SDK correctly
+
     Serial.begin(115200);
 
     while(!Serial){
@@ -65,7 +69,7 @@ void setup() {
     setAllFans(startDutyCycles);
     setupRPMCounter();
     setupLight();
-    setupLidar();
+
 
 }
 
