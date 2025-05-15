@@ -30,6 +30,10 @@ bool imu_error = false;
 int error_timer = 5000;
 
 void setup() {
+
+    setupLidar();
+    lidarState(true); // Enabling the LiDAR at start so it can grab the SDK correctly
+
     Serial.begin(115200);
 
     while(!Serial){
@@ -70,13 +74,14 @@ void setup() {
     setAllFans(startDutyCycles);
     setupRPMCounter();
     setupLight();
-    setupLidar();
+
 #ifdef ROS
     if (!joystick_adc_error || !ultrasonic_adc_error || !fingerprint_error || !imu_error) {
         publishError(joystick_adc_error, ultrasonic_adc_error, fingerprint_error, imu_error);
         error_timer = 500;
     }
 #endif
+
 
 Serial.println("Joystick Error: " + String(joystick_adc_error));
     Serial.println("Ultrasonic Error: " + String(ultrasonic_adc_error));
