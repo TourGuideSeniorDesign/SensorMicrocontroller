@@ -85,7 +85,7 @@ uint8_t getFingerprintID() {
   return finger.fingerID;
 }
 
-void setupFingerprint()
+bool setupFingerprint()
 {
   while (!Serial);  // For Yun/Leo/Micro/Zero/...
   delay(100);
@@ -97,8 +97,15 @@ void setupFingerprint()
   if (finger.verifyPassword()) {
     Serial.println("Found fingerprint sensor!");
   } else {
+    int init_count = 0;
     Serial.println("Did not find fingerprint sensor :(");
-    while (1) { delay(1); }
+    while (!finger.verifyPassword()) {
+      Serial.println(init_count);
+      if (init_count > 10) {
+        return true;
+      }
+      init_count++;
+    }
   }
 
   Serial.println(F("Reading sensor parameters"));
@@ -120,6 +127,7 @@ void setupFingerprint()
     Serial.println("Waiting for valid finger...");
     Serial.print("Sensor contains "); Serial.print(finger.templateCount); Serial.println(" templates");
   }
+  return false;
 }
 
 void loopFingerprint()                     // run over and over again
