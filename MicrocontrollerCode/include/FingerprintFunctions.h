@@ -9,7 +9,7 @@
 
 uint8_t getFingerprintID();
 
-void setupFingerprint();
+bool setupFingerprint();
 
 void loopFingerprint();
 

@@ -18,17 +18,18 @@
  * @param gyroRang  - The range of the gyroscope using the icm20948_gyro_range_t enum
  * @param magDataRate - The data rate of the magnetometer using the ak09916_data_rate_t enum
  */
-void imuInit(Adafruit_ICM20948 &icm, icm20948_accel_range_t accelRang, icm20948_gyro_range_t gyroRang, ak09916_data_rate_t magDataRate){
-
+bool imuInit(Adafruit_ICM20948 &icm, icm20948_accel_range_t accelRang, icm20948_gyro_range_t gyroRang, ak09916_data_rate_t magDataRate){
+    int init_count = 0;
     // Try to initialize IMU!
-    if (!icm.begin_I2C()) {
+    while (!icm.begin_I2C()) {
         // if (!icm.begin_SPI(ICM_CS)) {
         // if (!icm.begin_SPI(ICM_CS, ICM_SCK, ICM_MISO, ICM_MOSI)) {
 
         Serial.println("Failed to find ICM20948 chip");
-        while (1) { //TODO might want to change this
-            delay(10);
+        if (init_count > 10) {
+            return true;
         }
+        init_count++;
     }
 
 
@@ -109,6 +110,7 @@ void imuInit(Adafruit_ICM20948 &icm, icm20948_accel_range_t accelRang, icm20948_
             break;
     }
     Serial.println();
+    return false;
 }
 
 

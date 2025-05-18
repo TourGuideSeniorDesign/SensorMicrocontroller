@@ -22,9 +22,17 @@ Adafruit_ADS1115 ultrasonicAdc;// Construct an ads1115
 Adafruit_ICM20948 icm;
 
 
-
+bool joystick_adc_error = false;
+bool ultrasonic_adc_error = false;
+bool fingerprint_error = false;
+bool imu_error = false;
+int error_timer = 5000;
 
 void setup() {
+
+    setupLidar();
+    lidarState(true); // Enabling the LiDAR at start so it can grab the SDK correctly
+
     Serial.begin(115200);
     FanDutyCycles startDutyCycles{};
     startDutyCycles.fan_0_duty_cycle = 0;
@@ -59,35 +67,66 @@ void setup() {
 
 
 
-    adcInit(ultrasonicAdc, 0x49); //default address
-    adcInit(joystickAdc, 0x48); //default address
-    imuInit(icm, ICM20948_ACCEL_RANGE_2_G, ICM20948_GYRO_RANGE_250_DPS, AK09916_MAG_DATARATE_10_HZ);
-    setupFingerprint();
+
+    watchdog_enable(5000, 1);  // updating the watchdog// set the watchdog to run at 5s interval
+
+    ultrasonic_adc_error = adcInit(ultrasonicAdc, 0x49); //default address
+    joystick_adc_error =  adcInit(joystickAdc, 0x48); //default address
+    imu_error = imuInit(icm, ICM20948_ACCEL_RANGE_2_G, ICM20948_GYRO_RANGE_250_DPS, AK09916_MAG_DATARATE_10_HZ);
+    fingerprint_error = setupFingerprint();
+    Serial.print("Fingerprint error: ");
+    setAllFans(startDutyCycles);
     setupRPMCounter();
     setupLight();
-    setupLidar();
-        watchdog_enable(8000, 1);  // updating the watchdog// set the watchdog to run at 8s interval
+
+#ifdef ROS
+    if (!joystick_adc_error || !ultrasonic_adc_error || !fingerprint_error || !imu_error) {
+        publishError(joystick_adc_error, ultrasonic_adc_error, fingerprint_error, imu_error);
+        error_timer = 500;
+    }
+#endif
+
+
+Serial.println("Joystick Error: " + String(joystick_adc_error));
+    Serial.println("Ultrasonic Error: " + String(ultrasonic_adc_error));
+    Serial.println("Fingerprint Error: " + String(fingerprint_error));
+    Serial.println("IMU Error: " + String(imu_error));
 }
 
 unsigned long lastFingerprintTime = 0;
+unsigned long lastErrorTime = 0;
 
 //unsigned long lastMicroRosTime = 0;
 
 void loop() {
-
     unsigned long currentMillis = millis();
 
     //TODO might want to figure out how to put these on core1 so that they can run in parallel
     //uint32_t start = millis();
-    RefSpeed omegaRef = joystickToSpeed(joystickAdc);
+    RefSpeed omegaRef{};
+    if (!joystick_adc_error) {
+        omegaRef = joystickToSpeed(joystickAdc);
+    }
+
+
     //uint32_t joystickTime = millis() - start;
-    USData usDistances = allUltrasonicDistance(joystickAdc, ultrasonicAdc);
+    USData usDistances{};
+    if (!ultrasonic_adc_error && !joystick_adc_error) {
+        usDistances = allUltrasonicDistance(joystickAdc, ultrasonicAdc);
+    }
+
+
     //uint32_t ultrasonicTime = millis() - start - joystickTime;
     PIRSensors pirSensors = readAllPIR();
     //uint32_t pirTime = millis() - start - joystickTime - ultrasonicTime;
     //uint8_t fingerID = getFingerprintID(); //TODO might want to put this on a timer so that it runs less frequently
     //uint32_t fingerprintTime = millis() - start - joystickTime - ultrasonicTime - pirTime;
-    IMUData imuData = getIMUData(icm);
+    IMUData imuData{};
+    if (!imu_error) {
+        imuData = getIMUData(icm);
+    }
+
+
     //uint32_t imuTime = millis() - start - joystickTime - ultrasonicTime - pirTime - fingerprintTime;
     FanSpeeds fanSpeeds = getAllFanSpeeds(); //TODO might want to put on a timer as well
     //uint32_t fanTime = millis() - start - joystickTime - ultrasonicTime - pirTime - fingerprintTime - imuTime;
@@ -95,15 +134,25 @@ void loop() {
     uint8_t fingerID = 2;
     if (currentMillis - lastFingerprintTime >= 5000) {
         lastFingerprintTime = currentMillis;
-        fingerID = getFingerprintID();
+        if (!fingerprint_error) {
+            fingerID = getFingerprintID();
+        }
+
         //Serial.println("Fingerprint ID: " + String(fingerID));
     }
+
     watchdog_update(); //updating the watchdog
+
     #ifdef ROS
 
     microRosTick();
 
     transmitMsg(omegaRef, usDistances, pirSensors, fanSpeeds, imuData);
+
+    if (currentMillis - lastErrorTime >= error_timer) {
+        lastErrorTime = currentMillis;
+        publishError(joystick_adc_error, ultrasonic_adc_error, fingerprint_error, imu_error);
+    }
 
     if(fingerID != 2){
         publishFingerprint(fingerID);
