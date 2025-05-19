@@ -35,21 +35,64 @@ RefSpeed joystickToSpeed(Adafruit_ADS1115 &adc){
 
     //setting the speeds
     RefSpeed speeds{};
-    float k = 0.011; //used for scaling
-    if (abs(sidewaysJoystick) > abs(forwardJoystick)) {
-    // Sideways movement dominates
-    if (sidewaysJoystick < 0) {
-        speeds.leftSpeed = static_cast<int8_t>(clamp(k * -sidewaysJoystick, -100.0f, 100.0f));
-        speeds.rightSpeed = 0;
-    } else {
-        speeds.leftSpeed = 0;
-        speeds.rightSpeed = static_cast<int8_t>(clamp(k * sidewaysJoystick, -100.0f, 100.0f));
+    const float MAX_INPUT = 13000.0f;
+    const float BACKWARD_X_THRESH = 0.65f;  // 0.0…1.0
+
+    // 1) normalize
+    float x = constrain(sidewaysJoystick / MAX_INPUT, -1.0f, 1.0f);
+    float y = constrain(forwardJoystick  / MAX_INPUT, -1.0f, 1.0f);
+
+    // 1b) pure backward shortcut
+    if (fabsf(x) < BACKWARD_X_THRESH && y < 0.0f) {
+        int8_t rev = (int8_t)roundf(y * 100.0f);
+        speeds.leftSpeed  = rev;
+        speeds.rightSpeed = rev;
+
+        //Deadzone
+        if(speeds.leftSpeed < deadzoneParam && speeds.leftSpeed > -deadzoneParam && speeds.rightSpeed < deadzoneParam && speeds.rightSpeed > -deadzoneParam){
+            speeds.leftSpeed = 0;
+            speeds.rightSpeed = 0;
+            return speeds;
+        }
+
+        return speeds;
     }
-} else {
-    // Forward or combined movement
-    speeds.leftSpeed = static_cast<int8_t>(clamp(k * (forwardJoystick - sidewaysJoystick), -100.0f, 100.0f));
-    speeds.rightSpeed = static_cast<int8_t>(clamp(k * (forwardJoystick + sidewaysJoystick), -100.0f, 100.0f));
-}
+
+    // 2) magnitude clamp
+    float mag = hypotf(x, y);
+    mag = constrain(mag, 0.0f, 1.0f);
+
+    // 3+4) decide pivot vs mix
+    float outer, inner;
+    if (fabsf(x) > 0.0f && y <= 0.0f) {
+        // any sideways + backward → pivot (inner=0, outer=1)
+        outer = 1.0f;
+        inner = 0.0f;
+    } else {
+        // forward or straight back (x==0) → smooth mix
+        float angle     = atan2f(fabsf(x), fabsf(y));
+        float turn_prop = angle / (M_PI_2);
+        outer = 1.0f;
+        inner = 1.0f - turn_prop;
+    }
+
+    // 5) assign inner/outer to left/right
+    float left_f  = (x >= 0.0f) ? inner : outer;
+    float right_f = (x >= 0.0f) ? outer : inner;
+
+    // 6) direction: any sideways → forward pivot; otherwise follow y
+    int dir = (fabsf(x) > 0.0f) ? +1 : (y >= 0.0f ? +1 : -1);
+
+    // 7) apply magnitude & direction
+    left_f  *= mag * dir;
+    right_f *= mag * dir;
+
+    // 8) clamp & scale to –100…+100
+    left_f  = constrain(left_f,  -1.0f, 1.0f);
+    right_f = constrain(right_f, -1.0f, 1.0f);
+    speeds.leftSpeed  = (int8_t)roundf(left_f  * 100.0f);
+    speeds.rightSpeed = (int8_t)roundf(right_f * 100.0f);
+
     //Deadzone
     if(speeds.leftSpeed < deadzoneParam && speeds.leftSpeed > -deadzoneParam && speeds.rightSpeed < deadzoneParam && speeds.rightSpeed > -deadzoneParam){
         speeds.leftSpeed = 0;
