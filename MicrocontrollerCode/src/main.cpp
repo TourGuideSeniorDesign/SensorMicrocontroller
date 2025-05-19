@@ -99,6 +99,7 @@ void loop() {
 
     //TODO might want to figure out how to put these on core1 so that they can run in parallel
     //uint32_t start = millis();
+    joystick_adc_error =  adcInit(joystickAdc, 0x48);
     RefSpeed omegaRef{};
     if (!joystick_adc_error) {
         omegaRef = joystickToSpeed(joystickAdc);
@@ -106,6 +107,7 @@ void loop() {
 
 
     //uint32_t joystickTime = millis() - start;
+    ultrasonic_adc_error = adcInit(ultrasonicAdc, 0x49); 
     USData usDistances{};
     if (!ultrasonic_adc_error && !joystick_adc_error) {
         usDistances = allUltrasonicDistance(joystickAdc, ultrasonicAdc);
@@ -117,6 +119,7 @@ void loop() {
     //uint32_t pirTime = millis() - start - joystickTime - ultrasonicTime;
     //uint8_t fingerID = getFingerprintID(); //TODO might want to put this on a timer so that it runs less frequently
     //uint32_t fingerprintTime = millis() - start - joystickTime - ultrasonicTime - pirTime;
+    imu_error = imuInit(icm, ICM20948_ACCEL_RANGE_2_G, ICM20948_GYRO_RANGE_250_DPS, AK09916_MAG_DATARATE_10_HZ);
     IMUData imuData{};
     if (!imu_error) {
         imuData = getIMUData(icm);
@@ -221,6 +224,4 @@ void loop() {
      Serial.print(" \tZ: ");
      Serial.println(imuData.mag_z);
     #endif
-    ultrasonic_adc_error = adcInit(ultrasonicAdc, 0x49); 
-    joystick_adc_error =  adcInit(joystickAdc, 0x48);
 }
