@@ -36,36 +36,58 @@ RefSpeed joystickToSpeed(Adafruit_ADS1115 &adc){
     //setting the speeds
     RefSpeed speeds{};
     const float MAX_INPUT = 13000.0f;
+    const float BACKWARD_X_THRESH = 0.65f;  // 0.0…1.0
+
     // 1) normalize
     float x = constrain(sidewaysJoystick / MAX_INPUT, -1.0f, 1.0f);
     float y = constrain(forwardJoystick  / MAX_INPUT, -1.0f, 1.0f);
+
+    // 1b) pure backward shortcut
+    if (fabsf(x) < BACKWARD_X_THRESH && y < 0.0f) {
+        int8_t rev = (int8_t)roundf(y * 100.0f);
+        speeds.leftSpeed  = rev;
+        speeds.rightSpeed = rev;
+
+        //Deadzone
+        if(speeds.leftSpeed < deadzoneParam && speeds.leftSpeed > -deadzoneParam && speeds.rightSpeed < deadzoneParam && speeds.rightSpeed > -deadzoneParam){
+            speeds.leftSpeed = 0;
+            speeds.rightSpeed = 0;
+            return speeds;
+        }
+
+        return speeds;
+    }
 
     // 2) magnitude clamp
     float mag = hypotf(x, y);
     mag = constrain(mag, 0.0f, 1.0f);
 
+    // 3+4) decide pivot vs mix
+    float outer, inner;
+    if (fabsf(x) > 0.0f && y <= 0.0f) {
+        // any sideways + backward → pivot (inner=0, outer=1)
+        outer = 1.0f;
+        inner = 0.0f;
+    } else {
+        // forward or straight back (x==0) → smooth mix
+        float angle     = atan2f(fabsf(x), fabsf(y));
+        float turn_prop = angle / (M_PI_2);
+        outer = 1.0f;
+        inner = 1.0f - turn_prop;
+    }
 
-    // 3) turn proportion from 0 (forward/back) to 1 (sideways)
-    float angle     = atan2f(fabsf(x), fabsf(y));  // 0…π/2
-    float turn_prop = angle / (M_PI_2);            // 0…1
-
-    // 4) outer/inner wheel
-    float outer = 1.0f, inner = 1.0f - turn_prop;
+    // 5) assign inner/outer to left/right
     float left_f  = (x >= 0.0f) ? inner : outer;
     float right_f = (x >= 0.0f) ? outer : inner;
 
-    // 5) smart dir logic
-    float yFrac = fabsf(y) / mag;
-    const float Y_FRAC_THRESHOLD = 0.10f;
-    int dir = (yFrac < Y_FRAC_THRESHOLD)
-              ? +1
-              : (y >= 0.0f ? +1 : -1);
+    // 6) direction: any sideways → forward pivot; otherwise follow y
+    int dir = (fabsf(x) > 0.0f) ? +1 : (y >= 0.0f ? +1 : -1);
 
-    // 6) apply magnitude & dir
+    // 7) apply magnitude & direction
     left_f  *= mag * dir;
     right_f *= mag * dir;
 
-    // 7) clamp & scale
+    // 8) clamp & scale to –100…+100
     left_f  = constrain(left_f,  -1.0f, 1.0f);
     right_f = constrain(right_f, -1.0f, 1.0f);
     speeds.leftSpeed  = (int8_t)roundf(left_f  * 100.0f);
