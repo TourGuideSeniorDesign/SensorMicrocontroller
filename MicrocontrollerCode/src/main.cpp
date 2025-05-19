@@ -221,5 +221,6 @@ void loop() {
      Serial.print(" \tZ: ");
      Serial.println(imuData.mag_z);
     #endif
-
+    ultrasonic_adc_error = adcInit(ultrasonicAdc, 0x49); 
+    joystick_adc_error =  adcInit(joystickAdc, 0x48);
 }
