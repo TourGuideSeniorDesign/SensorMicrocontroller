@@ -1,7 +1,6 @@
 #include <Wire.h>
 #include <Adafruit_ADS1X15.h>
 #include <Adafruit_ICM20948.h>
-
 #include <hardware/watchdog.h>
 #include "ADCFunctions.h"
 #include "JoystickFunctions.h"
@@ -35,6 +34,12 @@ void setup() {
     lidarState(true); // Enabling the LiDAR at start so it can grab the SDK correctly
 
     Serial.begin(115200);
+    FanDutyCycles startDutyCycles{};
+    startDutyCycles.fan_0_duty_cycle = 0;
+    startDutyCycles.fan_1_duty_cycle = 0;
+    startDutyCycles.fan_2_duty_cycle = 0;
+    startDutyCycles.fan_3_duty_cycle = 0;
+    setAllFans(startDutyCycles);
 
     while(!Serial){
         delay(10); //wait for serial
@@ -60,11 +65,10 @@ void setup() {
     while(!microRosSetup(1, nodeName, topicName));
     #endif
 
-    FanDutyCycles startDutyCycles{};
-    startDutyCycles.fan_0_duty_cycle = 0;
-    startDutyCycles.fan_1_duty_cycle = 0;
-    startDutyCycles.fan_2_duty_cycle = 0;
-    startDutyCycles.fan_3_duty_cycle = 0;
+
+
+
+    watchdog_enable(5000, 1);  // updating the watchdog// set the watchdog to run at 5s interval
 
     ultrasonic_adc_error = adcInit(ultrasonicAdc, 0x49); //default address
     joystick_adc_error =  adcInit(joystickAdc, 0x48); //default address
@@ -137,7 +141,7 @@ void loop() {
         //Serial.println("Fingerprint ID: " + String(fingerID));
     }
 
-
+    watchdog_update(); //updating the watchdog
 
     #ifdef ROS
 
