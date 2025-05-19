@@ -35,21 +35,42 @@ RefSpeed joystickToSpeed(Adafruit_ADS1115 &adc){
 
     //setting the speeds
     RefSpeed speeds{};
-    float k = 0.011; //used for scaling
-    if (abs(sidewaysJoystick) > abs(forwardJoystick)) {
-    // Sideways movement dominates
-    if (sidewaysJoystick < 0) {
-        speeds.leftSpeed = static_cast<int8_t>(clamp(k * -sidewaysJoystick, -100.0f, 100.0f));
-        speeds.rightSpeed = 0;
-    } else {
-        speeds.leftSpeed = 0;
-        speeds.rightSpeed = static_cast<int8_t>(clamp(k * sidewaysJoystick, -100.0f, 100.0f));
-    }
-} else {
-    // Forward or combined movement
-    speeds.leftSpeed = static_cast<int8_t>(clamp(k * (forwardJoystick - sidewaysJoystick), -100.0f, 100.0f));
-    speeds.rightSpeed = static_cast<int8_t>(clamp(k * (forwardJoystick + sidewaysJoystick), -100.0f, 100.0f));
-}
+    const float MAX_INPUT = 13000.0f;
+    // 1) normalize
+    float x = constrain(sidewaysJoystick / MAX_INPUT, -1.0f, 1.0f);
+    float y = constrain(forwardJoystick  / MAX_INPUT, -1.0f, 1.0f);
+
+    // 2) magnitude clamp
+    float mag = hypotf(x, y);
+    mag = constrain(mag, 0.0f, 1.0f);
+
+
+    // 3) turn proportion from 0 (forward/back) to 1 (sideways)
+    float angle     = atan2f(fabsf(x), fabsf(y));  // 0…π/2
+    float turn_prop = angle / (M_PI_2);            // 0…1
+
+    // 4) outer/inner wheel
+    float outer = 1.0f, inner = 1.0f - turn_prop;
+    float left_f  = (x >= 0.0f) ? inner : outer;
+    float right_f = (x >= 0.0f) ? outer : inner;
+
+    // 5) smart dir logic
+    float yFrac = fabsf(y) / mag;
+    const float Y_FRAC_THRESHOLD = 0.10f;
+    int dir = (yFrac < Y_FRAC_THRESHOLD)
+              ? +1
+              : (y >= 0.0f ? +1 : -1);
+
+    // 6) apply magnitude & dir
+    left_f  *= mag * dir;
+    right_f *= mag * dir;
+
+    // 7) clamp & scale
+    left_f  = constrain(left_f,  -1.0f, 1.0f);
+    right_f = constrain(right_f, -1.0f, 1.0f);
+    speeds.leftSpeed  = (int8_t)roundf(left_f  * 100.0f);
+    speeds.rightSpeed = (int8_t)roundf(right_f * 100.0f);
+
     //Deadzone
     if(speeds.leftSpeed < deadzoneParam && speeds.leftSpeed > -deadzoneParam && speeds.rightSpeed < deadzoneParam && speeds.rightSpeed > -deadzoneParam){
         speeds.leftSpeed = 0;
