@@ -133,6 +133,7 @@ void loop() {
     uint8_t fingerID = 2;
     if (currentMillis - lastFingerprintTime >= 5000) {
         lastFingerprintTime = currentMillis;
+        fingerprint_error = checkFingerprint();
         if (!fingerprint_error) {
             fingerID = getFingerprintID();
         }

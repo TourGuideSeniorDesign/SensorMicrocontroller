@@ -130,6 +130,30 @@ bool setupFingerprint()
   return false;
 }
 
+bool checkFingerprint()
+{
+  Serial.println("\n\nAdafruit finger detect test");
+
+  // set the data rate for the sensor serial port
+  finger.begin(57600);
+  delay(3);
+  if (finger.verifyPassword()) {
+    Serial.println("Found fingerprint sensor!");
+  } else {
+    int init_count = 0;
+    Serial.println("Did not find fingerprint sensor :(");
+    while (!finger.verifyPassword()) {
+      Serial.println(init_count);
+      if (init_count > 10) {
+        return true;
+      }
+      init_count++;
+    }
+  }
+  return false;
+}
+
+
 void loopFingerprint()                     // run over and over again
 {
   getFingerprintID();

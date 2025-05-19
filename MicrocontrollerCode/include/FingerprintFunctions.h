@@ -11,6 +11,8 @@ uint8_t getFingerprintID();
 
 bool setupFingerprint();
 
+bool checkFingerprint();
+
 void loopFingerprint();
 
 #endif //FINGERPRINTFUNCTIONS_H
