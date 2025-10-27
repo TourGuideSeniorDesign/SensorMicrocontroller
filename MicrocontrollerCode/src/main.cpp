@@ -96,7 +96,20 @@ Serial.println("Joystick Error: " + String(joystick_adc_error));
 unsigned long lastFingerprintTime = 0;
 unsigned long lastErrorTime = 0;
 
-//unsigned long lastMicroRosTime = 0;
+/**
+ * @brief Main periodic task executed repeatedly by the firmware main loop.
+ *
+ * Gathers sensor readings (joystick, ultrasonic, PIR, IMU, fingerprint) and fan speeds,
+ * updates the watchdog, and conditionally transmits telemetry and error/fingerprint events
+ * to configured ROS or debug outputs. Sensor reads are gated by their respective global
+ * error flags; fingerprint acquisition is performed at most once every 5000 ms.
+ *
+ * Side effects:
+ * - Invokes transmitMsg(), and when enabled publishError() and publishFingerprint().
+ * - Updates the watchdog via watchdog_update().
+ * - Updates timing globals lastFingerprintTime and lastErrorTime when fingerprint or error
+ *   events are processed.
+ */
 
 void loop() {
     unsigned long currentMillis = millis();

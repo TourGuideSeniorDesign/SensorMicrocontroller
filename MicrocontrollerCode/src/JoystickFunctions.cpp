@@ -9,6 +9,17 @@
 int diffParam = 30;
 int deadzoneParam = 30;
 
+/**
+ * @brief Converts raw ADC joystick readings into centered displacement values.
+ *
+ * Reads the forward/backward channel (ADC 0) and the left/right channel (ADC 1),
+ * subtracts calibrated center offsets, and returns a displacement vector whose
+ * components are the raw ADC counts offset so zero corresponds to the joystick center.
+ *
+ * @param adc ADC instance used to read joystick channels; forward/backward on channel 0 and left/right on channel 1.
+ * @return RefDisplacement Struct with `longDisp` (forward/backward displacement) and `latDisp` (left/right displacement),
+ *         expressed as centered ADC counts (each value = raw reading minus its calibrated center offset).
+ */
 RefDisplacement joystickToDisplacement(Adafruit_ADS1115 &adc){
     int forwardJoystick = adc.readADC_SingleEnded(0); //a0 is forward/backward
     int sidewaysJoystick = adc.readADC_SingleEnded(1); //a1 is left/right
@@ -31,6 +42,13 @@ RefDisplacement joystickToDisplacement(Adafruit_ADS1115 &adc){
     return displacements;
 }
 
+/**
+ * Convert joystick ADC readings into left/right motor speed commands.
+ *
+ * Reads forward/backward and sideways channels from the provided ADS1115 ADC, applies centering, normalization, deadzone handling, a backward shortcut, pivot-vs-mix steering logic, magnitude scaling, and a mid-speed alignment step to produce synchronized wheel speeds.
+ *
+ * @param adc Reference to an initialized Adafruit_ADS1115 ADC used to read joystick axes.
+ * @return RefSpeed Struct containing `leftSpeed` and `rightSpeed` as integer percentages in the range -100 to 100 (`-100` = full reverse, `+100` = full forward).
 RefSpeed joystickToSpeed(Adafruit_ADS1115 &adc){
     int forwardJoystick = adc.readADC_SingleEnded(0); //a0 is forward/backward
     int sidewaysJoystick = adc.readADC_SingleEnded(1); //a1 is left/right

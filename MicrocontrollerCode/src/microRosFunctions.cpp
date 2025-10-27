@@ -363,7 +363,15 @@ static void light_subscription_callback(const void *msgin) {
         setLight(lightState);
     }
 
-static void lidar_subscription_callback(const void *msgin){
+/**
+     * @brief Handle incoming Lidar messages and enable or disable the lidar accordingly.
+     *
+     * Reads the `state` field from the received `wheelchair_sensor_msgs__msg__Lidar` message:
+     * if `state` equals 0 the lidar is disabled, if `state` equals 1 the lidar is enabled.
+     *
+     * @param msgin Pointer to a `wheelchair_sensor_msgs__msg__Lidar` message.
+     */
+    static void lidar_subscription_callback(const void *msgin){
         const auto *msg = (const wheelchair_sensor_msgs__msg__Lidar *) msgin;
         if(msg->state == 0){
             lidarState(false);
@@ -373,6 +381,19 @@ static void lidar_subscription_callback(const void *msgin){
     }
 
 #ifdef ROS
+/**
+ * @brief Populate the global sensor message with current references and sensor readings and trigger publication.
+ *
+ * Populates the global ROS sensor message fields from the provided displacement, wheel speed, ultrasonic,
+ * PIR, fan speed, and IMU inputs, then runs the executor briefly so the message is delivered.
+ *
+ * @param thetaRef Reference displacement containing longitudinal and lateral displacement.
+ * @param omegaRef Reference wheel speeds containing left and right wheel speeds.
+ * @param ultrasonicData Ultrasonic sensor readings (front, back, left, right).
+ * @param pirSensors PIR sensor states for front, back, left, and right.
+ * @param fanSpeeds Fan duty/speed values for each fan channel.
+ * @param imuData IMU measurements: linear acceleration, angular velocity, and magnetic field.
+ */
 void transmitMsg(RefDisplacement thetaRef, RefSpeed omegaRef, USData ultrasonicData, PIRSensors pirSensors, FanSpeeds fanSpeeds, IMUData imuData) {
     sensorMsg.long_disp = thetaRef.longDisp;
     sensorMsg.lat_disp = thetaRef.latDisp;
@@ -408,6 +429,15 @@ void transmitMsg(RefDisplacement thetaRef, RefSpeed omegaRef, USData ultrasonicD
 
 #elif ROS_DEBUG
 
+/**
+ * @brief Populate the debug reference message with displacement and wheel-speed references and trigger executor processing.
+ *
+ * Populates the global debug message's left/right wheel speeds and longitudinal/lateral displacement fields from the
+ * provided references, then runs the executor briefly to process outgoing messages.
+ *
+ * @param thetaRef Reference displacement values; `longDisp` and `latDisp` are copied into the message.
+ * @param omegaRef Reference wheel speeds; `leftSpeed` and `rightSpeed` are copied into the message.
+ */
 void transmitMsg(RefDisplacement thetaRef, RefSpeed omegaRef){
     msg.left_speed = omegaRef.leftSpeed;
     msg.right_speed = omegaRef.rightSpeed;
