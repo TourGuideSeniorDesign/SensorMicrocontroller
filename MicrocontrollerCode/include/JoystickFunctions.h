@@ -19,8 +19,8 @@ struct RefSpeed {
  * Struct representing the reference displace
  */
 struct RefDisplacement {
-    int8_t longDisp;      ///< Forward/Backward displacement with + indicating forward
-    int8_t latDisp;     ///< Side to side displacement with + indicating right
+    int16_t longDisp;      ///< Forward/Backward displacement with + indicating forward
+    int16_t latDisp;     ///< Side to side displacement with + indicating right
 };
 
 /**
