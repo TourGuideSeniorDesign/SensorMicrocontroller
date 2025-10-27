@@ -5,7 +5,6 @@
 #include "ADCFunctions.h"
 #include "JoystickFunctions.h"
 #include "UltrasonicFunctions.h"
-#include "FingerprintFunctions.h"
 #include "PIRFunctions.h"
 #include "IMUFunctions.h"
 #include "FanFunctions.h"
@@ -24,9 +23,14 @@ Adafruit_ICM20948 icm;
 
 bool joystick_adc_error = false;
 bool ultrasonic_adc_error = false;
-bool fingerprint_error = false;
 bool imu_error = false;
 int error_timer = 5000;
+
+namespace {
+    constexpr uint8_t MOTOR_VOLTAGE_CHANNEL = 3;
+    // Update this scale factor to match the hardware voltage divider that feeds the ADS1115.
+    constexpr float MOTOR_VOLTAGE_SCALE = 1.0f;
+    }
 
 void setup() {
 
@@ -73,15 +77,13 @@ void setup() {
     ultrasonic_adc_error = adcInit(ultrasonicAdc, 0x49); //default address
     joystick_adc_error =  adcInit(joystickAdc, 0x48); //default address
     imu_error = imuInit(icm, ICM20948_ACCEL_RANGE_2_G, ICM20948_GYRO_RANGE_250_DPS, AK09916_MAG_DATARATE_10_HZ);
-    fingerprint_error = setupFingerprint();
-    Serial.print("Fingerprint error: ");
     setAllFans(startDutyCycles);
     setupRPMCounter();
     setupLight();
 
 #ifdef ROS
-    if (!joystick_adc_error || !ultrasonic_adc_error || !fingerprint_error || !imu_error) {
-        publishError(joystick_adc_error, ultrasonic_adc_error, fingerprint_error, imu_error);
+    if (!joystick_adc_error || !ultrasonic_adc_error || !imu_error) {
+        publishError(joystick_adc_error, ultrasonic_adc_error, imu_error, false); // add the extra false for downstream node to receive 4 argument message
         error_timer = 500;
     }
 #endif
@@ -89,11 +91,9 @@ void setup() {
 
 Serial.println("Joystick Error: " + String(joystick_adc_error));
     Serial.println("Ultrasonic Error: " + String(ultrasonic_adc_error));
-    Serial.println("Fingerprint Error: " + String(fingerprint_error));
     Serial.println("IMU Error: " + String(imu_error));
 }
 
-unsigned long lastFingerprintTime = 0;
 unsigned long lastErrorTime = 0;
 
 //unsigned long lastMicroRosTime = 0;
@@ -131,15 +131,8 @@ void loop() {
     FanSpeeds fanSpeeds = getAllFanSpeeds(); //TODO might want to put on a timer as well
     //uint32_t fanTime = millis() - start - joystickTime - ultrasonicTime - pirTime - fingerprintTime - imuTime;
 
-    uint8_t fingerID = 2;
-    if (currentMillis - lastFingerprintTime >= 5000) {
-        lastFingerprintTime = currentMillis;
-        if (!fingerprint_error) {
-            fingerID = getFingerprintID();
-        }
 
-        //Serial.println("Fingerprint ID: " + String(fingerID));
-    }
+    float motorVoltage = readVoltage(joystickAdc, MOTOR_VOLTAGE_CHANNEL, MOTOR_VOLTAGE_SCALE);
 
     watchdog_update(); //updating the watchdog
 
@@ -147,16 +140,13 @@ void loop() {
 
     microRosTick();
 
-    transmitMsg(omegaRef, usDistances, pirSensors, fanSpeeds, imuData);
+    transmitMsg(omegaRef, usDistances, pirSensors, fanSpeeds, imuData, motorVoltage);
 
     if (currentMillis - lastErrorTime >= error_timer) {
         lastErrorTime = currentMillis;
-        publishError(joystick_adc_error, ultrasonic_adc_error, fingerprint_error, imu_error);
+        publishError(joystick_adc_error, ultrasonic_adc_error, imu_error, false);
     }
 
-    if(fingerID != 2){
-        publishFingerprint(fingerID);
-    }
     #elif ROS_DEBUG
 
 
@@ -224,6 +214,9 @@ void loop() {
      Serial.print(imuData.mag_y);
      Serial.print(" \tZ: ");
      Serial.println(imuData.mag_z);
+
+     Serial.print("Motor Voltage (scaled): ");
+     Serial.println(motorVoltage);
     #endif
 
 }

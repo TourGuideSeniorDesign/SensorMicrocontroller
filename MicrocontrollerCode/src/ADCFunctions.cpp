@@ -47,3 +47,15 @@ void printADC(Adafruit_ADS1115 &adc){
     Serial.print("AIN3: "); Serial.println(adc3);
     Serial.println();
 }
+
+float readVoltage(Adafruit_ADS1115 &adc, uint8_t channel, float scaleFactor) {
+    if (channel > 3) {
+        Serial.println("Please select a pin between 0 and 3");
+        return 0.0f;
+    }
+
+    const int16_t rawReading = adc.readADC_SingleEnded(channel);
+    constexpr float LSB_IN_VOLTS = 0.000125f; // 125 µV per bit at GAIN_ONE
+
+    return rawReading * LSB_IN_VOLTS * scaleFactor;
+}

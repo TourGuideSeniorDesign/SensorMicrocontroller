@@ -1,5 +1,6 @@
 //
 // Created by Robbie on 11/20/24.
+// Modified by Arturo 10/27/2025 - Removed fingerprint functionality
 //
 #if defined(ROS) || defined(ROS_DEBUG)
 #include "microRosFunctions.h"
@@ -17,11 +18,12 @@
 #include <rclc/executor.h>
 
 #include <wheelchair_sensor_msgs/msg/sensors.h>
-#include <wheelchair_sensor_msgs/msg/fingerprint.h>
 #include <wheelchair_sensor_msgs/msg/fan_speed.h>
 #include <wheelchair_sensor_msgs/msg/light.h>
 #include <wheelchair_sensor_msgs/msg/lidar.h>
 #include <wheelchair_sensor_msgs/msg/sensor_error.h>
+#include <wheelchair_sensor_msgs/msg/motor_voltage.h>
+#include <std_msgs/msg/float32.h>
 
 
 #ifdef ROS_DEBUG
@@ -30,8 +32,8 @@
 
 
 rcl_publisher_t sensorPublisher;
-rcl_publisher_t fingerprintPublisher;
 rcl_publisher_t errorPublisher;
+rcl_publisher_t motorVoltagePublisher;
 
 rcl_subscription_t fanSubscriber;
 rcl_subscription_t lightSubscriber;
@@ -41,6 +43,7 @@ wheelchair_sensor_msgs__msg__FanSpeed fanMsg;
 wheelchair_sensor_msgs__msg__Light lightMsg;
 wheelchair_sensor_msgs__msg__Lidar lidarMsg;
 #ifdef ROS
+std_msgs_Float32 motorVoltageMsg;
 wheelchair_sensor_msgs__msg__Sensors sensorMsg;
 #elif ROS_DEBUG
 wheelchair_sensor_msgs__msg__RefSpeed msg;
@@ -97,19 +100,19 @@ bool create_entities(){
   // create node
   RCCHECK(rclc_node_init_default(&node, "sensors_node", "", &support));
 
-  #ifdef ROS
+#ifdef ROS
     // create publisher
     RCCHECK(rclc_publisher_init_best_effort(
         &sensorPublisher,
         &node,
         ROSIDL_GET_MSG_TYPE_SUPPORT(wheelchair_sensor_msgs, msg, Sensors),
         "sensors"));
-    // Create fingerprint publisher
-    RCCHECK(rclc_publisher_init_default(
-        &fingerprintPublisher,
+    // Create motor voltage publisher
+    RCCHECK(rclc_publisher_init_best_effort(
+        &motorVoltagePublisher,
         &node,
-        ROSIDL_GET_MSG_TYPE_SUPPORT(wheelchair_sensor_msgs, msg, Fingerprint),
-        "fingerprint"));
+        ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Float32),
+        "motor_voltage"));
 
     //Create error publisher
     RCCHECK(rclc_publisher_init_default(
@@ -159,7 +162,7 @@ RCCHECK(rclc_publisher_init_best_effort(
     // create executor
     //Number of handles = # timers + # subscriptions + # clients + # services
     executor = rclc_executor_get_zero_initialized_executor();
-    RCCHECK(rclc_executor_init(&executor, &support.context, 5, &allocator));
+    RCCHECK(rclc_executor_init(&executor, &support.context, 5, &allocator)); // Should this be changed down to 4?  - Fan, Light, Lidar, Timer
     RCCHECK(
         rclc_executor_add_subscription(&executor, &fanSubscriber, &fanMsg, &fan_subscription_callback, ON_NEW_DATA));
     RCCHECK(
@@ -170,9 +173,10 @@ RCCHECK(rclc_publisher_init_best_effort(
         ));
     RCCHECK(rclc_executor_add_timer(&executor, &timer));
 
-    #ifdef ROS
+#ifdef ROS
     sensorMsg.left_speed = 0;
     sensorMsg.right_speed = 0;
+    motorVoltageMsg.data = 0.0f;
 #elif ROS_DEBUG
     msg.left_speed = 0;
     msg.right_speed = 0;
@@ -192,8 +196,11 @@ void destroy_entities(){
     RCCHECK(rcl_subscription_fini(&lidarSubscriber, &node));
     RCCHECK(rcl_subscription_fini(&lightSubscriber, &node));
     RCCHECK(rcl_publisher_fini(&sensorPublisher, &node));
-    RCCHECK(rcl_publisher_fini(&fingerprintPublisher, &node));
+    RCCHECK(rcl_publisher_fini(&errorPublisher, &node));
+    #ifdef ROS
+    RCCHECK(rcl_publisher_fini(&motorVoltagePublisher, &node));
     RCCHECK(rcl_timer_fini(&timer));
+    #endif
     RCCHECK(rclc_executor_fini(&executor));
     RCCHECK(rcl_node_fini(&node));
     RCCHECK(rclc_support_fini(&support));
@@ -229,10 +236,9 @@ void microRosTick(){
 
 //TODO add the fan subscriber
 #ifdef ROS
-boolean microRosSetup(unsigned int timer_timeout, const char *nodeName, const char *sensorTopicName,
-                   const char *fingerprintTopicName) {
+boolean microRosSetup(unsigned int timer_timeout, const char *nodeName, const char *sensorTopicName) {
 #elif ROS_DEBUG
-    boolean microRosSetup(unsigned int timer_timeout, const char* nodeName, const char* topicName){
+    boolean microRosSetup(unsigned int timer_timeout, const char* nodeName, const char* topicName) {
 #endif
     set_microros_serial_transports(Serial);
     delay(2000);
@@ -261,12 +267,12 @@ boolean microRosSetup(unsigned int timer_timeout, const char *nodeName, const ch
         &node,
         ROSIDL_GET_MSG_TYPE_SUPPORT(wheelchair_sensor_msgs, msg, Sensors),
         sensorTopicName));
-    // Create fingerprint publisher
+    // Create motor voltage publisher
     RCCHECK(rclc_publisher_init_default(
-        &fingerprintPublisher,
+        &motorVoltagePublisher,
         &node,
-        ROSIDL_GET_MSG_TYPE_SUPPORT(wheelchair_sensor_msgs, msg, Fingerprint),
-        fingerprintTopicName));
+        ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Float32),
+        "motor_voltage"));
 
     // create timer,
     //unsigned int timer_timeout = 1;
@@ -324,6 +330,7 @@ RCCHECK(rclc_publisher_init_best_effort(
 #ifdef ROS
     sensorMsg.left_speed = 0;
     sensorMsg.right_speed = 0;
+    motorVoltageMsg.data = 0.0f;
 #elif ROS_DEBUG
     msg.left_speed = 0;
     msg.right_speed = 0;
@@ -331,14 +338,7 @@ RCCHECK(rclc_publisher_init_best_effort(
     return true;
 }
 
-
-void publishFingerprint(uint8_t fingerprintID) {
-        wheelchair_sensor_msgs__msg__Fingerprint fingerprintMsg;
-        fingerprintMsg.user_id = fingerprintID;
-        RCSOFTCHECK(rcl_publish(&fingerprintPublisher, &fingerprintMsg, NULL));
-    }
-
-void publishError(const bool joystick_adc_error, const bool ultrasonic_adc_error, const bool fingerprint_error, const bool imu_error) {
+void publishError(const bool joystick_adc_error, const bool ultrasonic_adc_error, const bool imu_error) {
         wheelchair_sensor_msgs__msg__SensorError sensorErrorMsg;
         sensorErrorMsg.joystick_adc_error = joystick_adc_error;
         sensorErrorMsg.ultrasonic_adc_error = ultrasonic_adc_error;
@@ -373,7 +373,7 @@ static void lidar_subscription_callback(const void *msgin){
     }
 
 #ifdef ROS
-void transmitMsg(RefSpeed omegaRef, USData ultrasonicData, PIRSensors pirSensors, FanSpeeds fanSpeeds, IMUData imuData) {
+void transmitMsg(RefSpeed omegaRef, USData ultrasonicData, PIRSensors pirSensors, FanSpeeds fanSpeeds, IMUData imuData, float motorVoltage) {
     sensorMsg.left_speed = omegaRef.leftSpeed;
     sensorMsg.right_speed = omegaRef.rightSpeed;
     sensorMsg.ultrasonic_front_0 = ultrasonicData.us_front_0;
@@ -399,6 +399,9 @@ void transmitMsg(RefSpeed omegaRef, USData ultrasonicData, PIRSensors pirSensors
     sensorMsg.magnetic_field_y = imuData.mag_y;
     sensorMsg.magnetic_field_z = imuData.mag_z;
 
+    motorVoltageMsg.data = motorVoltage;
+    RCSOFTCHECK(rcl_publish(&motorVoltagePublisher, &motorVoltageMsg, NULL));
+    
     RCSOFTCHECK(rclc_executor_spin_some(&executor, RCL_MS_TO_NS(10)));
 }
 
