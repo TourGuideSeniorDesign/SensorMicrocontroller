@@ -20,7 +20,7 @@
  * @param sensorTopicName The name of the topic
  * @param fingerprintTopicName
  */
-boolean microRosSetup(unsigned int timerValue, const char* nodeName, const char* sensorTopicName, const char* fingerprintTopicName);
+boolean microRosSetup(unsigned int timerValue, const char *nodeName, const char *sensorTopicName, const char *fingerprintTopicName);
 
 bool create_entities();
 
@@ -28,7 +28,7 @@ void destroy_entities();
 
 void microRosTick();
 
-void transmitMsg(RefSpeed omegaRef, USData ultrasonicData, PIRSensors pirSensors, FanSpeeds fanSpeeds, IMUData imuData);
+void transmitMsg(RefDisplacement thetaRef, RefSpeed omegaRef, USData ultrasonicData, PIRSensors pirSensors, FanSpeeds fanSpeeds, IMUData imuData);
 
 void publishFingerprint(uint8_t fingerprintID);
 
@@ -40,8 +40,6 @@ static void light_subscription_callback(const void *msgin);
 
 static void lidar_subscription_callback(const void *msgin);
 
-
-
 #elif ROS_DEBUG
 /**
  * Sets up microROS communication
@@ -49,7 +47,7 @@ static void lidar_subscription_callback(const void *msgin);
  * @param nodeName The name of the node
  * @param topicName The name of the topic
  */
-boolean microRosSetup(unsigned int timerValue, const char* nodeName, const char* topicName);
+boolean microRosSetup(unsigned int timerValue, const char *nodeName, const char *topicName);
 
 /**
  * Transmits the message over ROS
@@ -62,4 +60,4 @@ void checkConnection();
 
 void reconnectAgent();
 
-#endif //JOYSTICK_MICROROSFUNCTIONS_H
+#endif // JOYSTICK_MICROROSFUNCTIONS_H
