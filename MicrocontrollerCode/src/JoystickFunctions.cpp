@@ -26,8 +26,11 @@ RefDisplacement joystickToDisplacement(Adafruit_ADS1115 &adc){
      */
 
     //Converting the speeds so they start around 0 and then go positive and negative
-    displacements.longDisp = forwardJoystick - (8500+4400); //The second value is used to zero it out when the ADC gain is set to 0 instead of the default (2/3)
-    displacements.latDisp = sidewaysJoystick - (8400+4400);
+    // displacements.longDisp = forwardJoystick - (8500+4400); //The second value is used to zero it out when the ADC gain is set to 0 instead of the default (2/3)
+    // displacements.latDisp = sidewaysJoystick - (8400+4400);
+
+    displacements.longDisp = forwardJoystick;
+    displacements.latDisp = sidewaysJoystick;
     return displacements;
 }
 
