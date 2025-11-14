@@ -51,7 +51,7 @@ boolean microRosSetup(unsigned int timerValue, const char *nodeName, const char 
  * Transmits the message over ROS
  * @param omegaRef The referenceSpeed struct to transmit
  */
-void transmitMsg(RefSpeed omegaRef);
+void transmitMsg(RefDisplacement thetaRef, RefSpeed omegaRef);
 #endif
 
 void checkConnection();

@@ -70,7 +70,7 @@ void setup() {
 
     #ifdef ROS
         if (!joystick_adc_error || !ultrasonic_adc_error || !imu_error) {
-            publishError(joystick_adc_error, ultrasonic_adc_error, 0, imu_error);
+            publishError(joystick_adc_error, ultrasonic_adc_error, imu_error);
             error_timer = 500;
         }
     #endif

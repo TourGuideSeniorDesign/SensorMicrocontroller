@@ -12,7 +12,7 @@ int deadzoneParam = 30;
 RefDisplacement joystickToDisplacement(Adafruit_ADS1115 &adc){
     int forwardJoystick = adc.readADC_SingleEnded(0); //a0 is forward/backward
     int sidewaysJoystick = adc.readADC_SingleEnded(1); //a1 is left/right
-    Serial.println
+    Serial.println("Joystick longitudinal displacement: " + String(forwardJoystick) + " latitudinal displacement: " + String(sidewaysJoystick));
     RefDisplacement displacements;
     /*
      * Joystick middle values: ~8500

@@ -315,11 +315,10 @@ RCCHECK(rclc_publisher_init_best_effort(
 }
 
 
-void publishError(const bool joystick_adc_error, const bool ultrasonic_adc_error, const bool fingerprint_error, const bool imu_error) {
+void publishError(const bool joystick_adc_error, const bool ultrasonic_adc_error, const bool imu_error) {
         wheelchair_sensor_msgs__msg__SensorError sensorErrorMsg;
         sensorErrorMsg.joystick_adc_error = joystick_adc_error;
         sensorErrorMsg.ultrasonic_adc_error = ultrasonic_adc_error;
-        sensorErrorMsg.fingerprint_error = fingerprint_error;
         sensorErrorMsg.imu_error = imu_error;
         RCSOFTCHECK(rcl_publish(&errorPublisher, &sensorErrorMsg, NULL));
     }
@@ -350,7 +349,7 @@ static void lidar_subscription_callback(const void *msgin){
     }
 
 #ifdef ROS
-void transmitMsg(RefDisplacement thetaRef, RefSpeed omegaRef, USData ultrasonicData, PIRSensors pirSensors, FanSpeeds fanSpeeds, IMUData imuData) {
+void transmitMsg(RefDisplacement thetaRef, RefSpeed omegaRef, USData ultrasonicData, FanSpeeds fanSpeeds, IMUData imuData) {
     sensorMsg.long_disp = thetaRef.longDisp;
     sensorMsg.lat_disp = thetaRef.latDisp;
     sensorMsg.left_speed = omegaRef.leftSpeed;
@@ -360,10 +359,6 @@ void transmitMsg(RefDisplacement thetaRef, RefSpeed omegaRef, USData ultrasonicD
     sensorMsg.ultrasonic_back = ultrasonicData.us_back;
     sensorMsg.ultrasonic_left = ultrasonicData.us_left;
     sensorMsg.ultrasonic_right = ultrasonicData.us_right;
-    sensorMsg.pir_front = pirSensors.pir0;
-    sensorMsg.pir_back = pirSensors.pir1;
-    sensorMsg.pir_left = pirSensors.pir2;
-    sensorMsg.pir_right = pirSensors.pir3;
     sensorMsg.fan_speed_0 = fanSpeeds.fan_speed_0;
     sensorMsg.fan_speed_1 = fanSpeeds.fan_speed_1;
     sensorMsg.fan_speed_2 = fanSpeeds.fan_speed_2;
