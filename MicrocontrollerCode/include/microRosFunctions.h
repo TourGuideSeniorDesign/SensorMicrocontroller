@@ -8,7 +8,6 @@
 #include <Arduino.h>
 #include "JoystickFunctions.h"
 #include "UltrasonicFunctions.h"
-#include "PIRFunctions.h"
 #include "FanFunctions.h"
 #include "IMUFunctions.h"
 
