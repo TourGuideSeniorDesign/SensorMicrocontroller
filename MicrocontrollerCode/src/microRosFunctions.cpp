@@ -17,7 +17,6 @@
 #include <rclc/executor.h>
 
 #include <wheelchair_sensor_msgs/msg/sensors.h>
-#include <wheelchair_sensor_msgs/msg/fingerprint.h>
 #include <wheelchair_sensor_msgs/msg/fan_speed.h>
 #include <wheelchair_sensor_msgs/msg/light.h>
 #include <wheelchair_sensor_msgs/msg/lidar.h>
@@ -30,7 +29,6 @@
 
 
 rcl_publisher_t sensorPublisher;
-rcl_publisher_t fingerprintPublisher;
 rcl_publisher_t errorPublisher;
 
 rcl_subscription_t fanSubscriber;
@@ -104,12 +102,6 @@ bool create_entities(){
         &node,
         ROSIDL_GET_MSG_TYPE_SUPPORT(wheelchair_sensor_msgs, msg, Sensors),
         "sensors"));
-    // Create fingerprint publisher
-    RCCHECK(rclc_publisher_init_default(
-        &fingerprintPublisher,
-        &node,
-        ROSIDL_GET_MSG_TYPE_SUPPORT(wheelchair_sensor_msgs, msg, Fingerprint),
-        "fingerprint"));
 
     //Create error publisher
     RCCHECK(rclc_publisher_init_default(
@@ -192,7 +184,6 @@ void destroy_entities(){
     RCCHECK(rcl_subscription_fini(&lidarSubscriber, &node));
     RCCHECK(rcl_subscription_fini(&lightSubscriber, &node));
     RCCHECK(rcl_publisher_fini(&sensorPublisher, &node));
-    RCCHECK(rcl_publisher_fini(&fingerprintPublisher, &node));
     RCCHECK(rcl_timer_fini(&timer));
     RCCHECK(rclc_executor_fini(&executor));
     RCCHECK(rcl_node_fini(&node));
@@ -229,8 +220,6 @@ void microRosTick(){
 
 //TODO add the fan subscriber
 #ifdef ROS
-boolean microRosSetup(unsigned int timer_timeout, const char *nodeName, const char *sensorTopicName,
-                   const char *fingerprintTopicName) {
 #elif ROS_DEBUG
     boolean microRosSetup(unsigned int timer_timeout, const char* nodeName, const char* topicName){
 #endif
@@ -261,12 +250,6 @@ boolean microRosSetup(unsigned int timer_timeout, const char *nodeName, const ch
         &node,
         ROSIDL_GET_MSG_TYPE_SUPPORT(wheelchair_sensor_msgs, msg, Sensors),
         sensorTopicName));
-    // Create fingerprint publisher
-    RCCHECK(rclc_publisher_init_default(
-        &fingerprintPublisher,
-        &node,
-        ROSIDL_GET_MSG_TYPE_SUPPORT(wheelchair_sensor_msgs, msg, Fingerprint),
-        fingerprintTopicName));
 
     // create timer,
     //unsigned int timer_timeout = 1;
@@ -332,17 +315,10 @@ RCCHECK(rclc_publisher_init_best_effort(
 }
 
 
-void publishFingerprint(uint8_t fingerprintID) {
-        wheelchair_sensor_msgs__msg__Fingerprint fingerprintMsg;
-        fingerprintMsg.user_id = fingerprintID;
-        RCSOFTCHECK(rcl_publish(&fingerprintPublisher, &fingerprintMsg, NULL));
-    }
-
-void publishError(const bool joystick_adc_error, const bool ultrasonic_adc_error, const bool fingerprint_error, const bool imu_error) {
+void publishError(const bool joystick_adc_error, const bool ultrasonic_adc_error, const bool imu_error) {
         wheelchair_sensor_msgs__msg__SensorError sensorErrorMsg;
         sensorErrorMsg.joystick_adc_error = joystick_adc_error;
         sensorErrorMsg.ultrasonic_adc_error = ultrasonic_adc_error;
-        sensorErrorMsg.fingerprint_error = fingerprint_error;
         sensorErrorMsg.imu_error = imu_error;
         RCSOFTCHECK(rcl_publish(&errorPublisher, &sensorErrorMsg, NULL));
     }
@@ -373,7 +349,7 @@ static void lidar_subscription_callback(const void *msgin){
     }
 
 #ifdef ROS
-void transmitMsg(RefDisplacement thetaRef, RefSpeed omegaRef, USData ultrasonicData, PIRSensors pirSensors, FanSpeeds fanSpeeds, IMUData imuData) {
+void transmitMsg(RefDisplacement thetaRef, RefSpeed omegaRef, USData ultrasonicData, FanSpeeds fanSpeeds, IMUData imuData) {
     sensorMsg.long_disp = thetaRef.longDisp;
     sensorMsg.lat_disp = thetaRef.latDisp;
     sensorMsg.left_speed = omegaRef.leftSpeed;
@@ -383,10 +359,6 @@ void transmitMsg(RefDisplacement thetaRef, RefSpeed omegaRef, USData ultrasonicD
     sensorMsg.ultrasonic_back = ultrasonicData.us_back;
     sensorMsg.ultrasonic_left = ultrasonicData.us_left;
     sensorMsg.ultrasonic_right = ultrasonicData.us_right;
-    sensorMsg.pir_front = pirSensors.pir0;
-    sensorMsg.pir_back = pirSensors.pir1;
-    sensorMsg.pir_left = pirSensors.pir2;
-    sensorMsg.pir_right = pirSensors.pir3;
     sensorMsg.fan_speed_0 = fanSpeeds.fan_speed_0;
     sensorMsg.fan_speed_1 = fanSpeeds.fan_speed_1;
     sensorMsg.fan_speed_2 = fanSpeeds.fan_speed_2;
