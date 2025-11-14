@@ -17,7 +17,6 @@
 #include <rclc/executor.h>
 
 #include <wheelchair_sensor_msgs/msg/sensors.h>
-#include <wheelchair_sensor_msgs/msg/fingerprint.h>
 #include <wheelchair_sensor_msgs/msg/fan_speed.h>
 #include <wheelchair_sensor_msgs/msg/light.h>
 #include <wheelchair_sensor_msgs/msg/lidar.h>
@@ -30,7 +29,6 @@
 
 
 rcl_publisher_t sensorPublisher;
-rcl_publisher_t fingerprintPublisher;
 rcl_publisher_t errorPublisher;
 
 rcl_subscription_t fanSubscriber;
@@ -104,12 +102,6 @@ bool create_entities(){
         &node,
         ROSIDL_GET_MSG_TYPE_SUPPORT(wheelchair_sensor_msgs, msg, Sensors),
         "sensors"));
-    // Create fingerprint publisher
-    RCCHECK(rclc_publisher_init_default(
-        &fingerprintPublisher,
-        &node,
-        ROSIDL_GET_MSG_TYPE_SUPPORT(wheelchair_sensor_msgs, msg, Fingerprint),
-        "fingerprint"));
 
     //Create error publisher
     RCCHECK(rclc_publisher_init_default(
@@ -192,7 +184,6 @@ void destroy_entities(){
     RCCHECK(rcl_subscription_fini(&lidarSubscriber, &node));
     RCCHECK(rcl_subscription_fini(&lightSubscriber, &node));
     RCCHECK(rcl_publisher_fini(&sensorPublisher, &node));
-    RCCHECK(rcl_publisher_fini(&fingerprintPublisher, &node));
     RCCHECK(rcl_timer_fini(&timer));
     RCCHECK(rclc_executor_fini(&executor));
     RCCHECK(rcl_node_fini(&node));
@@ -229,8 +220,6 @@ void microRosTick(){
 
 //TODO add the fan subscriber
 #ifdef ROS
-boolean microRosSetup(unsigned int timer_timeout, const char *nodeName, const char *sensorTopicName,
-                   const char *fingerprintTopicName) {
 #elif ROS_DEBUG
     boolean microRosSetup(unsigned int timer_timeout, const char* nodeName, const char* topicName){
 #endif
@@ -261,12 +250,6 @@ boolean microRosSetup(unsigned int timer_timeout, const char *nodeName, const ch
         &node,
         ROSIDL_GET_MSG_TYPE_SUPPORT(wheelchair_sensor_msgs, msg, Sensors),
         sensorTopicName));
-    // Create fingerprint publisher
-    RCCHECK(rclc_publisher_init_default(
-        &fingerprintPublisher,
-        &node,
-        ROSIDL_GET_MSG_TYPE_SUPPORT(wheelchair_sensor_msgs, msg, Fingerprint),
-        fingerprintTopicName));
 
     // create timer,
     //unsigned int timer_timeout = 1;
@@ -331,12 +314,6 @@ RCCHECK(rclc_publisher_init_best_effort(
     return true;
 }
 
-
-void publishFingerprint(uint8_t fingerprintID) {
-        wheelchair_sensor_msgs__msg__Fingerprint fingerprintMsg;
-        fingerprintMsg.user_id = fingerprintID;
-        RCSOFTCHECK(rcl_publish(&fingerprintPublisher, &fingerprintMsg, NULL));
-    }
 
 void publishError(const bool joystick_adc_error, const bool ultrasonic_adc_error, const bool fingerprint_error, const bool imu_error) {
         wheelchair_sensor_msgs__msg__SensorError sensorErrorMsg;

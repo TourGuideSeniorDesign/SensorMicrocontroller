@@ -20,7 +20,7 @@
  * @param sensorTopicName The name of the topic
  * @param fingerprintTopicName
  */
-boolean microRosSetup(unsigned int timerValue, const char *nodeName, const char *sensorTopicName, const char *fingerprintTopicName);
+boolean microRosSetup(unsigned int timerValue, const char *nodeName, const char *sensorTopicName);
 
 bool create_entities();
 
@@ -28,11 +28,9 @@ void destroy_entities();
 
 void microRosTick();
 
-void transmitMsg(RefDisplacement thetaRef, RefSpeed omegaRef, USData ultrasonicData, PIRSensors pirSensors, FanSpeeds fanSpeeds, IMUData imuData);
+void transmitMsg(RefDisplacement thetaRef, RefSpeed omegaRef, USData ultrasonicData, FanSpeeds fanSpeeds, IMUData imuData);
 
-void publishFingerprint(uint8_t fingerprintID);
-
-void publishError(bool joystick_adc_error, bool ultrasonic_adc_error, bool fingerprint_error, bool imu_error);
+void publishError(bool joystick_adc_error, bool ultrasonic_adc_error, bool imu_error);
 
 static void fan_subscription_callback(const void *msgin);
 
